@@ -1,216 +1,174 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Darts Rangliste Live</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Darts Rangliste Live</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 <div class="container">
-  <h1>Darts Rangliste Live</h1>
+  <h1>🎯 Darts Rangliste Live</h1>
 
-  <section class="input-section">
+  <!-- Turnier Eingabe -->
+  <section class="card">
     <h2>Turnier erfassen</h2>
     <input id="tournamentName" placeholder="Turniername">
     <input type="date" id="tournamentDate">
+
     <div id="players"></div>
     <button onclick="addTournament()">Turnier speichern</button>
   </section>
 
-  <section class="ranking-section">
+  <!-- Rangliste -->
+  <section class="card">
     <h2>Gesamtrangliste</h2>
     <div id="ranking"></div>
-
-    <div class="charts">
-      <canvas id="winsChart"></canvas>
-      <canvas id="diffChart"></canvas>
-    </div>
   </section>
 
-  <section class="tournament-archive">
+  <!-- Diagramme -->
+  <section class="card">
+    <h2>Diagramme</h2>
+    <canvas id="winsChart"></canvas>
+    <canvas id="avgChart"></canvas>
+    <canvas id="dqChart"></canvas>
+  </section>
+
+  <!-- Turniere -->
+  <section class="card">
     <h2>Gespeicherte Turniere</h2>
     <div id="tournamentList"></div>
   </section>
 </div>
 
-<!-- Firebase Module Import -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-  // Firebase Konfiguration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
-    authDomain: "darts-turniere-dacfc.firebaseapp.com",
-    databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "darts-turniere-dacfc",
-    storageBucket: "darts-turniere-dacfc.firebasestorage.app",
-    messagingSenderId: "779378324704",
-    appId: "1:779378324704:web:88aaf743660af6c138cc85"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
+  authDomain: "darts-turniere-dacfc.firebaseapp.com",
+  databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "darts-turniere-dacfc",
+  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
+  messagingSenderId: "779378324704",
+  appId: "1:779378324704:web:88aaf743660af6c138cc85"
+};
 
-  // Firebase initialisieren
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-  const tournamentsRef = ref(database, 'tournaments');
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const refT = ref(db, "tournaments");
 
-  // Spieler
-  const players = ["Pembe", "Marki", "Schoba"];
-  const playerDiv = document.getElementById("players");
-  const tournamentName = document.getElementById("tournamentName");
-  const tournamentDate = document.getElementById("tournamentDate");
-  const rankingDiv = document.getElementById("ranking");
-  const tournamentListDiv = document.getElementById("tournamentList");
-  const winsChartCtx = document.getElementById("winsChart").getContext("2d");
-  const diffChartCtx = document.getElementById("diffChart").getContext("2d");
+const players = ["Pembe","Marki","Schoba"];
+const playersDiv = document.getElementById("players");
 
-  let winsChart, diffChart;
+players.forEach(p=>{
+  playersDiv.innerHTML += `
+  <div class="player-input">
+    <strong>${p}</strong><br>
+    S <input type="number" id="${p}-s" value="0">
+    N <input type="number" id="${p}-n" value="0">
+    GL <input type="number" id="${p}-gl" value="0">
+    VL <input type="number" id="${p}-vl" value="0">
+    AVG <input type="number" step="0.01" id="${p}-avg" value="0">
+    DQ % <input type="number" step="0.1" id="${p}-dq" value="0">
+  </div>`;
+});
 
-  // Spieler-Inputs erstellen
-  players.forEach(p => {
-    playerDiv.innerHTML += `
-      <div class="card player-card">
-        <strong>${p}</strong>
+window.addTournament = ()=>{
+  const name = tournamentName.value;
+  const date = tournamentDate.value;
+  if(!name || !date) return alert("Name & Datum fehlen");
+
+  const entries = players.map(p=>({
+    player:p,
+    s:+document.getElementById(`${p}-s`).value,
+    n:+document.getElementById(`${p}-n`).value,
+    gl:+document.getElementById(`${p}-gl`).value,
+    vl:+document.getElementById(`${p}-vl`).value,
+    avg:+document.getElementById(`${p}-avg`).value,
+    dq:+document.getElementById(`${p}-dq`).value
+  }));
+
+  push(refT,{name,date,entries});
+};
+
+let winsChart, avgChart, dqChart;
+
+onValue(refT,snap=>{
+  const data=snap.val();
+  if(!data) return;
+
+  const tournaments=Object.entries(data).map(([k,v])=>({id:k,...v}));
+  build(tournaments);
+});
+
+function build(tournaments){
+  const stats={};
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0});
+
+  tournaments.forEach(t=>t.entries.forEach(e=>{
+    const s=stats[e.player];
+    s.s+=e.s; s.n+=e.n; s.gl+=e.gl; s.vl+=e.vl;
+  }));
+
+  const ranking=Object.entries(stats)
+    .map(([p,s])=>({...s,player:p,diff:s.gl-s.vl}))
+    .sort((a,b)=>b.s-a.s||b.gl-a.gl||b.diff-a.diff);
+
+  document.getElementById("ranking").innerHTML=
+    ranking.map((r,i)=>`
+      <div>
+        ${["🥇","🥈","🥉"][i]||i+1}. ${r.player}
+        | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
+      </div>`).join("");
+
+  drawCharts(tournaments);
+  drawTournaments(tournaments);
+}
+
+function drawCharts(tournaments){
+  const labels=tournaments.map(t=>t.name);
+
+  const datasetsAvg = players.map((p,i)=>({
+    label:p,
+    data:tournaments.map(t=>t.entries.find(e=>e.player===p).avg),
+    borderWidth:2
+  }));
+
+  const datasetsDQ = players.map((p,i)=>({
+    label:p,
+    data:tournaments.map(t=>t.entries.find(e=>e.player===p).dq),
+    borderWidth:2
+  }));
+
+  avgChart?.destroy();
+  dqChart?.destroy();
+
+  avgChart=new Chart(avgChartCtx,{
+    type:"line",
+    data:{labels,datasets:datasetsAvg}
+  });
+
+  dqChart=new Chart(dqChartCtx,{
+    type:"line",
+    data:{labels,datasets:datasetsDQ}
+  });
+}
+
+function drawTournaments(tournaments){
+  tournamentList.innerHTML=tournaments.map(t=>`
+    <div>
+      <strong>${t.name}</strong> (${t.date})
+      <button onclick="remove(ref(db,'tournaments/${t.id}'))">Löschen</button>
+      ${t.entries.map(e=>`
         <div>
-          S: <input type="number" id="${p}-s" min="0" value="0">
-          N: <input type="number" id="${p}-n" min="0" value="0">
-          GL: <input type="number" id="${p}-gl" min="0" value="0">
-          VL: <input type="number" id="${p}-vl" min="0" value="0">
-        </div>
-      </div>
-    `;
-  });
-
-  // Neues Turnier speichern
-  window.addTournament = function() {
-    const name = tournamentName.value;
-    const date = tournamentDate.value;
-    if (!name || !date) { alert("Bitte Turniername und Datum ausfüllen!"); return; }
-
-    const entries = players.map(p => ({
-      player: p,
-      wins: +document.getElementById(`${p}-s`).value,
-      losses: +document.getElementById(`${p}-n`).value,
-      gl: +document.getElementById(`${p}-gl`).value,
-      vl: +document.getElementById(`${p}-vl`).value
-    }));
-
-    push(tournamentsRef, { name, date, entries });
-
-    // Felder zurücksetzen
-    tournamentName.value = "";
-    tournamentDate.value = "";
-    players.forEach(p => {
-      document.getElementById(`${p}-s`).value = 0;
-      document.getElementById(`${p}-n`).value = 0;
-      document.getElementById(`${p}-gl`).value = 0;
-      document.getElementById(`${p}-vl`).value = 0;
-    });
-  }
-
-  // Daten aus Firebase abrufen & live aktualisieren
-  onValue(tournamentsRef, snapshot => {
-    const data = snapshot.val();
-    const tournaments = data ? Object.entries(data).map(([key, value]) => ({ key, ...value })) : [];
-    buildRanking(tournaments);
-  });
-
-  function buildRanking(tournaments) {
-    const stats = {};
-    players.forEach(p => stats[p] = { wins: 0, losses: 0, gl: 0, vl: 0 });
-
-    tournaments.forEach(t =>
-      t.entries.forEach(e => {
-        stats[e.player].wins += e.wins;
-        stats[e.player].losses += e.losses;
-        stats[e.player].gl += e.gl;
-        stats[e.player].vl += e.vl;
-      })
-    );
-
-    const ranking = Object.entries(stats)
-      .map(([player, s]) => ({ player, ...s, diff: s.gl - s.vl }))
-      .sort((a,b) => b.wins - a.wins || b.gl - a.gl || b.diff - a.diff);
-
-    renderRanking(ranking);
-    renderCharts(ranking);
-    renderTournaments(tournaments);
-  }
-
-  function renderRanking(ranking) {
-    rankingDiv.innerHTML = ranking.map((r,i) => `
-      <div class="card player-card">
-        <span>${["🥇","🥈","🥉"][i] || i+1}. ${r.player}</span>
-        <span>S:${r.wins} N:${r.losses} GL:${r.gl} VL:${r.vl} Diff:${r.diff}</span>
-      </div>
-    `).join("");
-  }
-
-  function renderCharts(ranking) {
-    const labels = ranking.map(r => r.player);
-
-    if (winsChart) winsChart.destroy();
-    if (diffChart) diffChart.destroy();
-
-    winsChart = new Chart(winsChartCtx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: "Siege",
-          data: ranking.map(r => r.wins),
-          backgroundColor: ranking.map((r,i) => ["#FFD700","#C0C0C0","#CD7F32"][i] || "#4caf50"),
-          borderRadius: 10
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-
-    diffChart = new Chart(diffChartCtx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: "Diff",
-          data: ranking.map(r => r.diff),
-          backgroundColor: "#FF9800",
-          borderRadius: 10
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-  }
-
-  function renderTournaments(tournaments) {
-    if (!tournaments.length) {
-      tournamentListDiv.innerHTML = "<p>Keine Turniere gespeichert.</p>";
-      return;
-    }
-
-    tournamentListDiv.innerHTML = tournaments.map(t => {
-      const entriesHtml = t.entries.map(e => {
-        const diff = e.gl - e.vl;
-        return `<div>${e.player}: S:${e.wins} N:${e.losses} GL:${e.gl} VL:${e.vl} Diff:${diff}</div>`;
-      }).join("");
-
-      return `
-        <div class="card">
-          <strong>${t.name}</strong> (${t.date})
-          <button class="delete-btn" onclick="deleteTournament('${t.key}')">Löschen</button>
-          <div>${entriesHtml}</div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  window.deleteTournament = function(key) {
-    if (confirm("Willst du dieses Turnier wirklich löschen?")) {
-      remove(ref(database, 'tournaments/' + key));
-    }
-  }
+          ${e.player} | S:${e.s} N:${e.n} GL:${e.gl} VL:${e.vl}
+          AVG:${e.avg} DQ:${e.dq}%
+        </div>`).join("")}
+    </div>`).join("");
+}
 </script>
-
 </body>
 </html>
