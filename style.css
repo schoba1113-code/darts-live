@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu;
   background: #f4f6f8;
   color: #1f2933;
 }
@@ -11,97 +11,40 @@ body {
   padding: 20px;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 20px;
+header{text-align:center;margin-bottom:20px}
+
+header h1{margin:0}
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.05);
 }
 
-header h1 {
-  margin: 0;
-}
+.form-row{display:flex;gap:10px;margin-bottom:10px}
 
-.card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-}
+input,select{padding:8px;border-radius:8px;border:1px solid #d1d5db;width:100%;box-sizing:border-box}
 
-.form-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
+.player-row{display:grid;grid-template-columns:120px repeat(6,1fr);gap:6px;margin-bottom:6px;align-items:center}
+.player-row strong{font-weight:600}
 
-input,
-select {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  width: 100%;
-  box-sizing: border-box;
+.primary{
+  margin-top:10px;padding:10px;border:none;border-radius:10px;
+  background:#2563eb;color:#fff;font-weight:600;cursor:pointer
 }
+.primary:hover{background:#1d4ed8}
 
-.player-row {
-  display: grid;
-  grid-template-columns: 120px repeat(6, 1fr);
-  gap: 6px;
-  margin-bottom: 6px;
-  align-items: center;
-}
+.rank-row{padding:6px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px}
+.rank-row.gold{background:#fde68a}
+.rank-row.silver{background:#e5e7eb;color:#374151}
+.rank-row.bronze{background:#fcd34d}
 
-.player-row strong {
-  font-weight: 600;
-}
+.medal{font-size:20px;margin-right:6px}
 
-.primary {
-  margin-top: 10px;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 600;
-  cursor: pointer;
-}
+.tournament{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #e5e7eb}
+.tournament button{border:none;background:#ef4444;color:#fff;border-radius:6px;padding:4px 8px;cursor:pointer}
+.tournament button:hover{background:#dc2626}
 
-.primary:hover {
-  background: #1d4ed8;
-}
-
-.rank-row {
-  padding: 6px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.rank-row.top {
-  background: #fef3c7;
-  font-weight: 600;
-}
-
-.tournament {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.tournament button {
-  border: none;
-  background: #ef4444;
-  color: #ffffff;
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.tournament button:hover {
-  background: #dc2626;
-}
-
-canvas {
-  margin-top: 20px;
-  max-width: 100%;
-}
+canvas{margin-top:20px;max-width:100%}
