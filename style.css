@@ -39,7 +39,7 @@ input,select{padding:8px;border-radius:8px;border:1px solid #d1d5db;width:100%;b
 .rank-row{padding:6px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px}
 .rank-row.gold{background:#fde68a}
 .rank-row.silver{background:#e5e7eb;color:#374151}
-.rank-row.bronze{background:#fcd34d}
+.rank-row.bronze{background:#b87333} /* Dunkleres Bronze für Platz 3 */
 
 .medal{font-size:20px;margin-right:6px}
 
