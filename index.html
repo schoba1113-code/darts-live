@@ -1,225 +1,228 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Darts Rangliste</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link rel="stylesheet" href="style.css" />
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Darts Rangliste</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>🎯 Darts Rangliste</h1>
-    </header>
 
-    <!-- TURNIER ERFASSEN -->
-    <div class="card">
-      <h2>Turnier erfassen</h2>
+<div class="app">
+<header>
+  <h1>🎯 Darts Rangliste</h1>
+</header>
 
-      <div class="form-row">
-        <input id="tName" placeholder="Turniername">
-        <input id="tDate" type="date">
-      </div>
-
-      <div id="players"></div>
-
-      <button class="primary" onclick="saveTournament()">Turnier speichern</button>
-    </div>
-
-    <!-- JAHRESFILTER -->
-    <div class="card">
-      <h2>Jahreswertung</h2>
-      <select id="yearFilter" onchange="renderAll()"></select>
-    </div>
-
-    <!-- RANGLISTE -->
-    <div class="card">
-      <h2>Gesamtrangliste</h2>
-      <div id="ranking"></div>
-    </div>
-
-    <!-- TURNIERE -->
-    <div class="card">
-      <h2>Gespeicherte Turniere</h2>
-      <div id="tournamentList"></div>
-    </div>
-
-    <!-- DIAGRAMME -->
-    <div class="card">
-      <h2>Statistiken</h2>
-      <canvas id="avgChart"></canvas>
-      <canvas id="doubleChart"></canvas>
-    </div>
+<!-- Turnier erfassen -->
+<section class="card">
+  <h2>Turnier erfassen</h2>
+  <div class="form-row">
+    <input id="tName" placeholder="Turniername">
+    <input id="tDate" type="date">
   </div>
+  <div id="players"></div>
+  <button class="primary" onclick="saveTournament()">Turnier speichern</button>
+</section>
 
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!-- Jahresfilter -->
+<section class="card">
+  <h2>Jahreswertung</h2>
+  <select id="yearFilter" onchange="renderAll()"></select>
+</section>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
-      authDomain: "darts-turniere-dacfc.firebaseapp.com",
-      databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "darts-turniere-dacfc",
-      storageBucket: "darts-turniere-dacfc.firebasestorage.app",
-      messagingSenderId: "779378324704",
-      appId: "1:779378324704:web:88aaf743660af6c138cc85"
+<!-- Rangliste -->
+<section class="card">
+  <h2>Gesamtrangliste</h2>
+  <div id="ranking"></div>
+</section>
+
+<!-- Turniere -->
+<section class="card">
+  <h2>Gespeicherte Turniere</h2>
+  <div id="tournamentList"></div>
+</section>
+
+<!-- Diagramme -->
+<section class="card">
+  <h2>Statistiken</h2>
+  <canvas id="avgChart"></canvas>
+  <canvas id="dqChart"></canvas>
+  <canvas id="winsChart"></canvas>
+  <canvas id="diffChart"></canvas>
+</section>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
+  authDomain: "darts-turniere-dacfc.firebaseapp.com",
+  databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "darts-turniere-dacfc",
+  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
+  messagingSenderId: "779378324704",
+  appId: "1:779378324704:web:88aaf743660af6c138cc85"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const players = ["Pembe","Marki","Schoba"];
+const playerDiv=document.getElementById("players");
+const rankingDiv=document.getElementById("ranking");
+const tournamentList=document.getElementById("tournamentList");
+const yearFilter=document.getElementById("yearFilter");
+
+let allTournaments = {};
+let avgChart,dqChart,winsChart,diffChart;
+
+// Spieler Inputs erzeugen
+players.forEach(p=>{
+  playerDiv.innerHTML += `
+  <div class="player-row">
+    <strong>${p}</strong>
+    <input placeholder="S" id="${p}-s">
+    <input placeholder="N" id="${p}-n">
+    <input placeholder="GL" id="${p}-gl">
+    <input placeholder="VL" id="${p}-vl">
+    <input placeholder="AVG" id="${p}-avg">
+    <input placeholder="DQ %" id="${p}-dq">
+  </div>`;
+});
+
+// Turnier speichern
+window.saveTournament = function() {
+  if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
+  const data = {name: tName.value, date: tDate.value, players:{}};
+  players.forEach(p=>{
+    data.players[p]={
+      s:+document.getElementById(`${p}-s`).value||0,
+      n:+document.getElementById(`${p}-n`).value||0,
+      gl:+document.getElementById(`${p}-gl`).value||0,
+      vl:+document.getElementById(`${p}-vl`).value||0,
+      avg:+document.getElementById(`${p}-avg`).value||0,
+      dq:+document.getElementById(`${p}-dq`).value||0
     };
+  });
+  push(ref(db,"tournaments"),data);
+  document.querySelectorAll("input").forEach(i=>i.value="");
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+// Turnier löschen
+window.deleteTournament = function(id){
+  if(!confirm("Turnier wirklich löschen?")) return;
+  remove(ref(db,"tournaments/"+id));
+};
 
-    const players = ["Pembe", "Marki", "Schoba"];
-    const playerDiv = document.getElementById("players");
-    const rankingDiv = document.getElementById("ranking");
-    const tournamentList = document.getElementById("tournamentList");
-    const yearFilter = document.getElementById("yearFilter");
+// Firebase Listener
+onValue(ref(db,"tournaments"),snap=>{
+  allTournaments = snap.val()||{};
+  buildYearFilter();
+  renderAll();
+});
 
-    let allTournaments = {};
-    let avgChart, doubleChart;
+// Jahresfilter erzeugen
+function buildYearFilter(){
+  const years = new Set();
+  Object.values(allTournaments).forEach(t=>years.add(t.date.slice(0,4)));
+  yearFilter.innerHTML='<option value="all">Alle</option>';
+  [...years].sort().forEach(y=>{
+    yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+  });
+}
 
-    // SPIELER INPUTS
-    players.forEach(p => {
-      playerDiv.innerHTML += `
-        <div class="player-row">
-          <strong>${p}</strong>
-          <input placeholder="S" id="${p}-s">
-          <input placeholder="N" id="${p}-n">
-          <input placeholder="GL" id="${p}-gl">
-          <input placeholder="VL" id="${p}-vl">
-          <input placeholder="AVG" id="${p}-avg">
-          <input placeholder="DQ %" id="${p}-dq">
-        </div>
-      `;
+// Alles rendern
+function renderAll(){
+  const year=yearFilter.value;
+  const stats={};
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[]});
+
+  tournamentList.innerHTML = "";
+  Object.entries(allTournaments).forEach(([id,t])=>{
+    if(year!=="all" && !t.date.startsWith(year)) return;
+
+    // Turnierliste
+    const div=document.createElement("div");
+    div.className="tournament";
+    div.innerHTML=`<span>${t.name} (${t.date})</span>
+      <button onclick="deleteTournament('${id}')">Löschen</button>`;
+    tournamentList.appendChild(div);
+
+    // Stats
+    players.forEach(p=>{
+      const d=t.players[p];
+      stats[p].s+=d.s;
+      stats[p].n+=d.n;
+      stats[p].gl+=d.gl;
+      stats[p].vl+=d.vl;
+      stats[p].avg.push(d.avg);
+      stats[p].dq.push(d.dq);
     });
+  });
 
-    // TURNIER SPEICHERN
-    window.saveTournament = function () {
-      const name = tName.value;
-      const date = tDate.value;
-      if (!name || !date) return alert("Name und Datum fehlen");
+  renderRanking(stats);
+  renderCharts(stats);
+}
 
-      const data = { name, date, players: {} };
+// Rangliste inkl. Medaillen
+function renderRanking(stats){
+  rankingDiv.innerHTML="";
+  const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
+  sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||b.diff-a.diff);
+  sortable.forEach((r,i)=>{
+    const medal=i<3?["🥇","🥈","🥉"][i]:"";
+    rankingDiv.innerHTML+=`
+      <div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
+        <span class="medal">${medal}</span> ${r.player} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
+      </div>`;
+  });
+}
 
-      players.forEach(p => {
-        data.players[p] = {
-          s: +document.getElementById(`${p}-s`).value || 0,
-          n: +document.getElementById(`${p}-n`).value || 0,
-          gl: +document.getElementById(`${p}-gl`).value || 0,
-          vl: +document.getElementById(`${p}-vl`).value || 0,
-          avg: +document.getElementById(`${p}-avg`).value || 0,
-          dq: +document.getElementById(`${p}-dq`).value || 0
-        };
-      });
+// Diagramme rendern
+function renderCharts(stats){
+  const labels=stats[players[0]].avg.map((_,i)=>i+1);
 
-      push(ref(db, "tournaments"), data);
-      document.querySelectorAll("input").forEach(i => i.value = "");
-    };
+  avgChart?.destroy();
+  dqChart?.destroy();
+  winsChart?.destroy();
+  diffChart?.destroy();
 
-    // TURNIER LÖSCHEN (KORREKT!)
-    window.deleteTournament = function (id) {
-      if (!confirm("Turnier wirklich löschen?")) return;
-      remove(ref(db, "tournaments/" + id));
-    };
-
-    // FIREBASE LISTENER
-    onValue(ref(db, "tournaments"), snap => {
-      allTournaments = snap.val() || {};
-      buildYearFilter();
-      renderAll();
-    });
-
-    function buildYearFilter() {
-      const years = new Set();
-      Object.values(allTournaments).forEach(t => years.add(t.date.slice(0, 4)));
-      yearFilter.innerHTML = `<option value="all">Alle</option>`;
-      [...years].sort().forEach(y =>
-        yearFilter.innerHTML += `<option value="${y}">${y}</option>`
-      );
+  avgChart = new Chart(document.getElementById("avgChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:players.map(p=>({label:p+" AVG",data:stats[p].avg,tension:0.3}))
     }
+  });
 
-    function renderAll() {
-      const year = yearFilter.value;
-      const stats = {};
-      players.forEach(p => stats[p] = { s:0,n:0,gl:0,vl:0,avg:[],dq:[] });
-
-      tournamentList.innerHTML = "";
-
-      Object.entries(allTournaments).forEach(([id, t]) => {
-        if (year !== "all" && !t.date.startsWith(year)) return;
-
-        const div = document.createElement("div");
-        div.className = "tournament";
-        div.innerHTML = `
-          <span>${t.name} (${t.date})</span>
-          <button onclick="deleteTournament('${id}')">Löschen</button>
-        `;
-        tournamentList.appendChild(div);
-
-        players.forEach(p => {
-          const d = t.players[p];
-          stats[p].s += d.s;
-          stats[p].n += d.n;
-          stats[p].gl += d.gl;
-          stats[p].vl += d.vl;
-          stats[p].avg.push(d.avg);
-          stats[p].dq.push(d.dq);
-        });
-      });
-
-      renderRanking(stats);
-      renderCharts(stats);
+  dqChart = new Chart(document.getElementById("dqChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:players.map(p=>({label:p+" DQ %",data:stats[p].dq,tension:0.3}))
     }
+  });
 
-    function renderRanking(stats) {
-      rankingDiv.innerHTML = "";
-      const sorted = players.sort((a,b) =>
-        stats[b].s - stats[a].s ||
-        stats[b].gl - stats[a].gl ||
-        (stats[b].gl - stats[b].vl) - (stats[a].gl - stats[a].vl)
-      );
-
-      sorted.forEach((p,i) => {
-        const diff = stats[p].gl - stats[p].vl;
-        rankingDiv.innerHTML += `
-          <div class="rank-row ${i<3?'top':''}">
-            ${i+1}. ${p} | S:${stats[p].s} N:${stats[p].n}
-            GL:${stats[p].gl} VL:${stats[p].vl} Diff:${diff}
-          </div>
-        `;
-      });
+  winsChart = new Chart(document.getElementById("winsChart"),{
+    type:"bar",
+    data:{
+      labels:players,
+      datasets:[{label:"Siege",data:players.map(p=>stats[p].s),backgroundColor:["#FFD700","#C0C0C0","#CD7F32"]}]
     }
+  });
 
-    function renderCharts(stats) {
-      avgChart?.destroy();
-      doubleChart?.destroy();
-
-      avgChart = new Chart(document.getElementById("avgChart"), {
-        type: "line",
-        data: {
-          labels: stats[players[0]].avg.map((_,i)=>i+1),
-          datasets: players.map(p => ({
-            label: p + " AVG",
-            data: stats[p].avg
-          }))
-        }
-      });
-
-      doubleChart = new Chart(document.getElementById("doubleChart"), {
-        type: "line",
-        data: {
-          labels: stats[players[0]].dq.map((_,i)=>i+1),
-          datasets: players.map(p => ({
-            label: p + " DQ %",
-            data: stats[p].dq
-          }))
-        }
-      });
+  diffChart = new Chart(document.getElementById("diffChart"),{
+    type:"bar",
+    data:{
+      labels:players,
+      datasets:[{label:"Differenz (GL-VL)",data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fbbf24","#fcd34d","#fde68a"]}]
     }
-  </script>
+  });
+}
+
+</script>
 </body>
 </html>
