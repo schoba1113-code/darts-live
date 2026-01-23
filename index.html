@@ -180,7 +180,21 @@ function renderCharts(stats){
     type:"line",
     data:{
       labels,
-      datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,tension:0.3,borderColor:["#f59e0b","#6b7280","#b87333"][i]}))
+      datasets:players.map((p,i)=>({
+        label:p+" AVG",
+        data:stats[p].avg,
+        tension:0.3,
+        borderColor:["#f59e0b","#6b7280","#b87333"][i],
+        borderWidth:3,
+        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        pointRadius:5,
+        fill:false
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{tooltip:{mode:'index',intersect:false}},
+      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}
     }
   });
 
@@ -189,7 +203,21 @@ function renderCharts(stats){
     type:"line",
     data:{
       labels,
-      datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,tension:0.3,borderColor:["#f59e0b","#6b7280","#b87333"][i]}))
+      datasets:players.map((p,i)=>({
+        label:p+" DQ %",
+        data:stats[p].dq,
+        tension:0.3,
+        borderColor:["#f59e0b","#6b7280","#b87333"][i],
+        borderWidth:3,
+        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        pointRadius:5,
+        fill:false
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{tooltip:{mode:'index',intersect:false}},
+      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}
     }
   });
 
@@ -198,7 +226,17 @@ function renderCharts(stats){
     type:"bar",
     data:{
       labels:players,
-      datasets:[{label:"Siege",data:players.map(p=>stats[p].s),backgroundColor:["#fde68a","#e5e7eb","#a97142"]}]
+      datasets:[{
+        label:"Siege",
+        data:players.map(p=>stats[p].s),
+        backgroundColor:["#fde68a","#e5e7eb","#a97142"],
+        borderRadius:8
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}
     }
   });
 
@@ -207,7 +245,17 @@ function renderCharts(stats){
     type:"bar",
     data:{
       labels:players,
-      datasets:[{label:"Differenz (GL-VL)",data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fcd34d","#d1d5db","#b87333"]}]
+      datasets:[{
+        label:"Differenz (GL-VL)",
+        data:players.map(p=>stats[p].gl-stats[p].vl),
+        backgroundColor:["#fcd34d","#d1d5db","#b87333"],
+        borderRadius:8
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}
     }
   });
 }
