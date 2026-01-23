@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Darts Rangliste Live</title>
+<title>Darts Rangliste</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -12,24 +12,26 @@
 
 <header>
   <h1>🎯 Darts Rangliste</h1>
-  <p>Live • Alle Turniere • Gesamtwertung</p>
+  <p>Gesamt- & Jahreswertung</p>
 </header>
 
 <section class="card">
   <h2>Turnier erfassen</h2>
-
   <div class="form-row">
     <input id="tournamentName" placeholder="Turniername">
     <input type="date" id="tournamentDate">
   </div>
-
   <div id="players"></div>
-
   <button class="primary" onclick="addTournament()">Turnier speichern</button>
 </section>
 
 <section class="card">
-  <h2>Gesamtrangliste</h2>
+  <h2>Auswertung</h2>
+  <select id="yearFilter"></select>
+</section>
+
+<section class="card">
+  <h2>Rangliste</h2>
   <div id="ranking"></div>
 </section>
 
@@ -40,7 +42,7 @@
 </section>
 
 <section class="card">
-  <h2>Gespeicherte Turniere</h2>
+  <h2>Turniere</h2>
   <div id="tournamentList"></div>
 </section>
 
@@ -62,31 +64,26 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const refT = ref(db, "tournaments");
+const refT = ref(db,"tournaments");
 
-const players = ["Pembe", "Marki", "Schoba"];
-const playersDiv = document.getElementById("players");
-
+const players=["Pembe","Marki","Schoba"];
+const playersDiv=document.getElementById("players");
 players.forEach(p=>{
-  playersDiv.innerHTML += `
-    <div class="player-row">
-      <strong>${p}</strong>
-      <input type="number" placeholder="S" id="${p}-s">
-      <input type="number" placeholder="N" id="${p}-n">
-      <input type="number" placeholder="GL" id="${p}-gl">
-      <input type="number" placeholder="VL" id="${p}-vl">
-      <input type="number" step="0.01" placeholder="AVG" id="${p}-avg">
-      <input type="number" step="0.1" placeholder="DQ %" id="${p}-dq">
-    </div>`;
+  playersDiv.innerHTML+=`
+  <div class="player-row">
+    <strong>${p}</strong>
+    <input placeholder="S" type="number" id="${p}-s">
+    <input placeholder="N" type="number" id="${p}-n">
+    <input placeholder="GL" type="number" id="${p}-gl">
+    <input placeholder="VL" type="number" id="${p}-vl">
+    <input placeholder="AVG" type="number" step="0.01" id="${p}-avg">
+    <input placeholder="DQ %" type="number" step="0.1" id="${p}-dq">
+  </div>`;
 });
 
-window.addTournament = ()=>{
-  if(!tournamentName.value || !tournamentDate.value){
-    alert("Turniername und Datum fehlen");
-    return;
-  }
-
-  const entries = players.map(p=>({
+window.addTournament=()=>{
+  if(!tournamentName.value||!tournamentDate.value)return;
+  const entries=players.map(p=>({
     player:p,
     s:+document.getElementById(`${p}-s`).value,
     n:+document.getElementById(`${p}-n`).value,
@@ -95,93 +92,65 @@ window.addTournament = ()=>{
     avg:+document.getElementById(`${p}-avg`).value,
     dq:+document.getElementById(`${p}-dq`).value
   }));
-
-  push(refT,{
-    name:tournamentName.value,
-    date:tournamentDate.value,
-    entries
-  });
+  push(refT,{name:tournamentName.value,date:tournamentDate.value,entries});
 };
 
-let avgChart, dqChart;
+let avgChart,dqChart,allTournaments=[];
 
 onValue(refT,snap=>{
-  const data=snap.val();
-  if(!data) return;
-
-  const tournaments=Object.entries(data).map(([id,v])=>({id,...v}));
-  renderRanking(tournaments);
-  renderCharts(tournaments);
-  renderTournaments(tournaments);
+  allTournaments=snap.val()?Object.entries(snap.val()).map(([id,v])=>({id,...v})):[];
+  initYearFilter();
+  updateView();
 });
 
-function renderRanking(tournaments){
-  const stats={};
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0});
+yearFilter.onchange=updateView;
 
-  tournaments.forEach(t=>t.entries.forEach(e=>{
+function initYearFilter(){
+  const years=[...new Set(allTournaments.map(t=>t.date.slice(0,4)))].sort();
+  yearFilter.innerHTML=`<option value="all">Alle Jahre</option>`+
+    years.map(y=>`<option value="${y}">${y}</option>`).join("");
+}
+
+function updateView(){
+  const year=yearFilter.value;
+  const filtered=year==="all"?allTournaments:
+    allTournaments.filter(t=>t.date.startsWith(year));
+  renderRanking(filtered);
+  renderCharts(filtered);
+  renderTournaments(filtered);
+}
+
+function renderRanking(ts){
+  const stats={}; players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0});
+  ts.forEach(t=>t.entries.forEach(e=>{
     const s=stats[e.player];
     s.s+=e.s; s.n+=e.n; s.gl+=e.gl; s.vl+=e.vl;
   }));
-
-  const sorted=Object.entries(stats)
+  const r=Object.entries(stats)
     .map(([p,s])=>({...s,player:p,diff:s.gl-s.vl}))
     .sort((a,b)=>b.s-a.s||b.gl-a.gl||b.diff-a.diff);
 
-  ranking.innerHTML=sorted.map((r,i)=>`
+  ranking.innerHTML=r.map((x,i)=>`
     <div class="rank-row ${i<3?'top':''}">
-      <span>${["🥇","🥈","🥉"][i]||i+1}</span>
-      <strong>${r.player}</strong>
-      <span>S:${r.s}</span>
-      <span>N:${r.n}</span>
-      <span>GL:${r.gl}</span>
-      <span>VL:${r.vl}</span>
-      <span>Diff:${r.diff}</span>
+      ${["🥇","🥈","🥉"][i]||i+1} ${x.player}
+      S:${x.s} N:${x.n} GL:${x.gl} VL:${x.vl} Diff:${x.diff}
     </div>`).join("");
 }
 
-function renderCharts(tournaments){
-  const labels=tournaments.map(t=>t.name);
-
-  const avgData=players.map(p=>({
-    label:p,
-    data:tournaments.map(t=>t.entries.find(e=>e.player===p).avg),
-    tension:0.3
-  }));
-
-  const dqData=players.map(p=>({
-    label:p,
-    data:tournaments.map(t=>t.entries.find(e=>e.player===p).dq),
-    tension:0.3
-  }));
-
-  avgChart?.destroy();
-  dqChart?.destroy();
-
-  avgChart=new Chart(avgChart,{
-    type:"line",
-    data:{labels,datasets:avgData}
-  });
-
-  dqChart=new Chart(dqChart,{
-    type:"line",
-    data:{labels,datasets:dqData}
-  });
+function renderCharts(ts){
+  const labels=ts.map(t=>t.name);
+  const avgData=players.map(p=>({label:p,data:ts.map(t=>t.entries.find(e=>e.player===p).avg),tension:0.3}));
+  const dqData=players.map(p=>({label:p,data:ts.map(t=>t.entries.find(e=>e.player===p).dq),tension:0.3}));
+  avgChart?.destroy(); dqChart?.destroy();
+  avgChart=new Chart(avgChartCtx,{type:"line",data:{labels,datasets:avgData}});
+  dqChart=new Chart(dqChartCtx,{type:"line",data:{labels,datasets:dqData}});
 }
 
-function renderTournaments(tournaments){
-  tournamentList.innerHTML=tournaments.map(t=>`
+function renderTournaments(ts){
+  tournamentList.innerHTML=ts.map(t=>`
     <div class="tournament">
-      <div class="t-head">
-        <strong>${t.name}</strong>
-        <small>${t.date}</small>
-        <button onclick="remove(ref(db,'tournaments/${t.id}'))">✕</button>
-      </div>
-      ${t.entries.map(e=>`
-        <div class="t-row">
-          ${e.player} | S:${e.s} N:${e.n} GL:${e.gl} VL:${e.vl}
-          AVG:${e.avg} DQ:${e.dq}%
-        </div>`).join("")}
+      <strong>${t.name}</strong> (${t.date})
+      <button onclick="remove(ref(db,'tournaments/${t.id}'))">✕</button>
     </div>`).join("");
 }
 </script>
