@@ -127,7 +127,8 @@ function buildYearFilter(){
 function renderAll(){
   const year=yearFilter.value;
   const stats={};
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[]});
+  const turnierLabels=[];
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
   tournamentList.innerHTML = "";
   Object.entries(allTournaments).forEach(([id,t])=>{
@@ -139,6 +140,7 @@ function renderAll(){
       <button onclick="deleteTournament('${id}')">Löschen</button>`;
     tournamentList.appendChild(div);
 
+    turnierLabels.push(t.name);
     players.forEach(p=>{
       const d=t.players[p];
       stats[p].s+=d.s;
@@ -147,11 +149,12 @@ function renderAll(){
       stats[p].vl+=d.vl;
       stats[p].avg.push(d.avg);
       stats[p].dq.push(d.dq);
+      stats[p].turniere.push(t.name);
     });
   });
 
   renderRanking(stats);
-  renderCharts(stats);
+  renderCharts(stats, turnierLabels);
 }
 
 function renderRanking(stats){
@@ -167,15 +170,15 @@ function renderRanking(stats){
   });
 }
 
-function renderCharts(stats){
-  const labels=stats[players[0]].avg.map((_,i)=>i+1);
+function renderCharts(stats, turnierLabels){
+  const labels = turnierLabels.map((t,i)=>i+1);
 
   avgChart?.destroy();
   dqChart?.destroy();
   winsChart?.destroy();
   diffChart?.destroy();
 
-  // AVG Chart
+  // AVG Chart mit Tooltip Turniernamen
   avgChart = new Chart(document.getElementById("avgChart"),{
     type:"line",
     data:{
@@ -193,7 +196,13 @@ function renderCharts(stats){
     },
     options:{
       responsive:true,
-      plugins:{tooltip:{mode:'index',intersect:false}},
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
+          }
+        }
+      },
       scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}
     }
   });
@@ -216,7 +225,13 @@ function renderCharts(stats){
     },
     options:{
       responsive:true,
-      plugins:{tooltip:{mode:'index',intersect:false}},
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
+          }
+        }
+      },
       scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}
     }
   });
@@ -235,7 +250,14 @@ function renderCharts(stats){
     },
     options:{
       responsive:true,
-      plugins:{legend:{display:false}},
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>`Siege: ${ctx.raw}`
+          }
+        },
+        legend:{display:false}
+      },
       scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}
     }
   });
@@ -254,7 +276,14 @@ function renderCharts(stats){
     },
     options:{
       responsive:true,
-      plugins:{legend:{display:false}},
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>`Diff: ${ctx.raw}`
+          }
+        },
+        legend:{display:false}
+      },
       scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}
     }
   });
