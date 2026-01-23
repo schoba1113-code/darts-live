@@ -1,102 +1,89 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom, #e2e2e2, #cfcfcf);
   margin: 0;
-  padding: 0;
-  color: #222;
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+  color: #1f2933;
 }
 
-.container {
-  max-width: 900px;
+.app {
+  max-width: 1100px;
   margin: auto;
   padding: 20px;
 }
 
-h1 { text-align: center; font-size: 2.2rem; margin-bottom: 20px; color: #111; }
-h2 { text-align: center; font-size: 1.6rem; margin-bottom: 15px; color: #333; }
-
-section {
-  margin-bottom: 35px;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+header {
+  margin-bottom: 20px;
 }
 
-input[type="number"], input[type="text"], input[type="date"] {
-  margin: 5px 5px 5px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  width: 80px;
+h1 {
+  margin: 0;
 }
 
-button {
-  padding: 10px 20px;
-  border-radius: 12px;
-  border: none;
-  background-color: #ffcc00;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-top: 10px;
-}
-
-button:hover { background-color: #ffdb4d; }
-
-.delete-btn {
-  background-color: #e74c3c;
-  color: #fff;
-  font-size: 0.85rem;
-  padding: 4px 8px;
-  margin-left: 10px;
-}
-
-.delete-btn:hover {
-  background-color: #ff6666;
-}
-
-/* Spieler- und Turnierkarten */
 .card {
-  background: #fff;
-  padding: 12px 15px;
-  margin: 10px 0;
+  background: white;
   border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  transition: 0.2s;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-.player-card {
+.form-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.charts {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-}
-
-canvas {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-  margin-top: 20px;
-  padding: 15px;
-  max-width: 400px;
+input {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
   width: 100%;
 }
 
-@media (max-width: 600px) {
-  .player-card { flex-direction: column; align-items: flex-start; }
-  input[type="number"] { width: 60px; }
-  canvas { max-width: 100%; }
+.player-row {
+  display: grid;
+  grid-template-columns: 120px repeat(6,1fr);
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.primary {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 40px 120px repeat(5,1fr);
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rank-row.top {
+  background: #fef3c7;
+  font-weight: 600;
+}
+
+.tournament {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 0;
+}
+
+.t-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.t-head button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
 }
