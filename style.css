@@ -36,10 +36,18 @@ input,select{padding:8px;border-radius:8px;border:1px solid #d1d5db;width:100%;b
 }
 .primary:hover{background:#1d4ed8}
 
-.rank-row{padding:6px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px}
-.rank-row.gold{background:#fde68a}
-.rank-row.silver{background:#e5e7eb;color:#374151}
-.rank-row.bronze{background:#b87333} /* Dunkleres Bronze für Platz 3 */
+.rank-row{
+  padding:6px;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* Hintergrundfarben für die ersten 3 Plätze */
+.rank-row.gold{background:#fde68a}   /* Platz 1 */
+.rank-row.silver{background:#e5e7eb;color:#374151} /* Platz 2 */
+.rank-row.bronze{background:#a97142;color:#fff} /* Dunkleres Bronze für gesamte Zeile Platz 3 */
 
 .medal{font-size:20px;margin-right:6px}
 
