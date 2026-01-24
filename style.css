@@ -38,7 +38,7 @@ header h1 {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
-    overflow-x: auto; /* Scroll bei kleinen Displays */
+    overflow-x: auto;
 }
 
 .form-row input[type="text"],
@@ -49,30 +49,20 @@ header h1 {
     background-color: #ffffff;
     font-size: 1rem;
     color: #111827;
-    flex: 1 1 auto; /* Eingabefelder wachsen, damit Text nicht abgeschnitten wird */
-    min-width: 120px; /* kleine Breite für Hochformat */
+    flex: 1 1 auto;
+    min-width: 140px;
     white-space: nowrap;
 }
 
-.form-row input[type="text"]::placeholder {
+.form-row input::placeholder {
     color: #6b7280;
 }
 
-.form-row input[type="date"]::placeholder {
-    color: #6b7280;
-    content: "Datum"; /* Hinweis falls Feld leer */
-}
-
-/* Formulareingaben Spieler */
-input {
-    width: 60px;
-    padding: 6px;
-    margin: 0 5px 5px 0;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    text-align: center;
-    font-size: 0.9rem;
-    background-color: #ffffff;
+/* Button Row */
+.button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /* Buttons */
@@ -86,36 +76,31 @@ button {
     transition: all 0.2s;
 }
 
-/* Speichern-Button (Primary) */
 button.primary {
     background-color: #2563eb;
     color: #fff;
     min-width: 120px;
 }
-
 button.primary:hover {
     background-color: #1d4ed8;
     transform: scale(1.05);
 }
 
-/* Löschen-Button */
-.delete-btn {
-    background-color: #ef4444;
+button.secondary {
+    background-color: #9ca3af;
     color: #fff;
-    padding: 8px 14px;
-    font-size: 0.9rem;
+    min-width: 120px;
 }
-
-.delete-btn:hover {
-    background-color: #b91c1c;
+button.secondary:hover {
+    background-color: #6b7280;
     transform: scale(1.05);
 }
 
-/* Spielerreihe - horizontal + scroll bei klein */
+/* Spielerreihe - horizontal scroll */
 .player-row {
     display: flex;
     align-items: center;
-    overflow-x: auto; /* horizontal scroll bei kleinen Geräten */
+    overflow-x: auto;
     padding-bottom: 5px;
     margin-bottom: 10px;
 }
@@ -138,25 +123,10 @@ button.primary:hover {
     margin-bottom: 5px;
     font-weight: 500;
 }
-
-/* Medaillenfarben */
-.rank-row.gold {
-    background-color: #fcd34d;
-}
-
-.rank-row.silver {
-    background-color: #e5e7eb;
-}
-
-.rank-row.bronze {
-    background-color: #b87333;
-}
-
-/* Medaillen Emoji */
-.rank-row .medal {
-    margin-right: 8px;
-    font-size: 1.2rem;
-}
+.rank-row.gold { background-color: #fcd34d; }
+.rank-row.silver { background-color: #e5e7eb; }
+.rank-row.bronze { background-color: #b87333; }
+.rank-row .medal { margin-right: 8px; font-size: 1.2rem; }
 
 /* Turnierliste */
 .tournament {
@@ -167,12 +137,9 @@ button.primary:hover {
     padding: 8px 12px;
     margin-bottom: 6px;
     border-radius: 8px;
-    flex-wrap: wrap; /* Zeilen umbrechbar für kleine Displays */
+    flex-wrap: wrap;
 }
-
-.tournament button {
-    margin-top: 5px;
-}
+.tournament button { margin-top: 5px; }
 
 /* Charts */
 canvas {
@@ -181,29 +148,11 @@ canvas {
     margin-top: 15px;
 }
 
-/* Responsive Anpassungen für iPhone Hochformat */
+/* Responsive für Hochformat */
 @media (max-width: 600px) {
-    .form-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .rank-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .tournament {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    button {
-        margin-bottom: 5px;
-    }
-
-    .player-row input {
-        flex: 0 0 50px;
-        margin-right: 5px;
-    }
+    .form-row { flex-direction: column; align-items: stretch; }
+    .rank-row { flex-direction: column; align-items: flex-start; }
+    .tournament { flex-direction: column; align-items: flex-start; }
+    button { margin-bottom: 5px; }
+    .player-row input { flex: 0 0 45px; margin-right: 5px; }
 }
