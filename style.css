@@ -1,0 +1,178 @@
+/* Grundlayout */
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9fafb;
+    color: #111827;
+}
+
+.app {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2rem;
+}
+
+/* Karten */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Turniername + Datum Einheit */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    overflow-x: auto;
+}
+
+.form-row input[type="text"],
+.form-row input[type="date"] {
+    padding: 10px 12px;
+    border: 1px solid #3b82f6;
+    border-radius: 10px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #111827;
+    flex: 1 1 auto;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.form-row input[type="text"]::placeholder,
+.form-row input[type="date"]::placeholder {
+    color: #6b7280;
+}
+
+/* Spieler Inputs */
+input {
+    width: 60px;
+    padding: 6px;
+    margin: 0 5px 5px 0;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    text-align: center;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+}
+
+/* Buttons */
+button {
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 16px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+button.primary {
+    background-color: #2563eb;
+    color: #fff;
+    min-width: 120px;
+}
+
+button.primary:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.05);
+}
+
+button.secondary {
+    background-color: #9ca3af;
+    color: #fff;
+    min-width: 120px;
+}
+
+button.secondary:hover {
+    background-color: #6b7280;
+    transform: scale(1.05);
+}
+
+#applyFilterBtn {
+    background-color: #10b981;
+    color: #fff;
+}
+
+#applyFilterBtn:hover {
+    background-color: #059669;
+}
+
+/* Spielerreihe */
+.player-row {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.player-row strong {
+    flex: 0 0 80px;
+}
+
+.player-row input {
+    flex: 0 0 50px;
+    margin-right: 5px;
+}
+
+/* Rangliste */
+.rank-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.rank-row.gold { background-color: #fcd34d; }
+.rank-row.silver { background-color: #e5e7eb; }
+.rank-row.bronze { background-color: #b87333; }
+
+.rank-row .medal { margin-right: 8px; font-size: 1.2rem; }
+
+/* Turnierliste */
+.tournament {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.tournament button { margin-top: 5px; }
+
+/* Charts */
+canvas {
+    width: 100% !important;
+    max-height: 300px;
+    margin-top: 15px;
+}
+
+/* Responsive iPhone Hochformat */
+@media (max-width: 600px) {
+    .form-row { flex-direction: column; align-items: stretch; }
+    .rank-row { flex-direction: column; align-items: flex-start; }
+    .tournament { flex-direction: column; align-items: flex-start; }
+    button { margin-bottom: 5px; }
+    .player-row input { flex: 0 0 50px; margin-right: 5px; }
+}
