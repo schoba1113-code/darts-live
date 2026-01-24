@@ -32,11 +32,34 @@ header h1 {
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-/* Formulareingaben */
+/* Turniername + Datum Einheit */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.form-row input[type="text"],
+.form-row input[type="date"] {
+    padding: 10px 12px;
+    border: 1px solid #3b82f6;
+    border-radius: 10px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #111827;
+}
+
+.form-row input[type="text"]::placeholder,
+.form-row input[type="date"]::placeholder {
+    color: #6b7280;
+}
+
+/* Formulareingaben Spieler */
 input {
     width: 60px;
-    padding: 5px;
-    margin: 0 5px;
+    padding: 6px;
+    margin: 0 5px 5px 0;
     border-radius: 6px;
     border: 1px solid #d1d5db;
     text-align: center;
@@ -44,73 +67,68 @@ input {
     background-color: #ffffff;
 }
 
-/* Datumseingabe hervorheben */
-input[type="date"] {
-    width: 160px;
-    padding: 6px 10px;
-    border: 1px solid #3b82f6; /* deutlicher blauer Rahmen */
-    border-radius: 8px;
-    background-color: #ffffff;
-    color: #111827;
-    font-size: 0.95rem;
-}
-
-/* Placeholder-Farbe */
-input::placeholder {
-    color: #6b7280;
-}
-
 /* Buttons */
 button {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
     font-weight: bold;
-    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 16px;
+    font-size: 1rem;
+    transition: all 0.2s;
 }
 
+/* Speichern-Button (Primary) */
 button.primary {
     background-color: #2563eb;
     color: #fff;
-    transition: background-color 0.2s;
 }
 
 button.primary:hover {
     background-color: #1d4ed8;
+    transform: scale(1.05);
 }
 
+/* Allgemeine Sekundär-Buttons */
 button.secondary {
     background-color: #6b7280;
     color: #fff;
-    transition: background-color 0.2s;
 }
 
 button.secondary:hover {
     background-color: #4b5563;
+    transform: scale(1.05);
 }
 
+/* Löschen-Button */
 .delete-btn {
     background-color: #ef4444;
     color: #fff;
-    padding: 4px 8px;
-    font-size: 0.8rem;
+    padding: 8px 14px;
+    font-size: 0.9rem;
 }
 
 .delete-btn:hover {
     background-color: #b91c1c;
+    transform: scale(1.05);
 }
 
-/* Spielerreihe - horizontal wie vorher */
+/* Spielerreihe - horizontal + scroll bei klein */
 .player-row {
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* kleiner Bildschirm: Zeilenumbruch */
+    overflow-x: auto; /* horizontal scroll bei kleinen Geräten */
+    padding-bottom: 5px;
     margin-bottom: 10px;
 }
 
 .player-row strong {
-    width: 80px;
+    flex: 0 0 80px;
+}
+
+.player-row input {
+    flex: 0 0 50px;
+    margin-right: 5px;
 }
 
 /* Rangliste */
@@ -125,15 +143,15 @@ button.secondary:hover {
 
 /* Medaillenfarben */
 .rank-row.gold {
-    background-color: #fcd34d; /* helles Gold */
+    background-color: #fcd34d;
 }
 
 .rank-row.silver {
-    background-color: #e5e7eb; /* Silber/Grau */
+    background-color: #e5e7eb;
 }
 
 .rank-row.bronze {
-    background-color: #b87333; /* Bronze */
+    background-color: #b87333;
 }
 
 /* Medaillen Emoji */
@@ -164,24 +182,29 @@ canvas {
     margin-top: 15px;
 }
 
-/* Responsive */
+/* Responsive Anpassungen */
 @media (max-width: 600px) {
-    .player-row {
+    .form-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
-    input {
-        margin-bottom: 5px;
-    }
+
     .rank-row {
         flex-direction: column;
         align-items: flex-start;
     }
+
     .tournament {
         flex-direction: column;
         align-items: flex-start;
     }
+
     button {
         margin-bottom: 5px;
+    }
+
+    .player-row input {
+        flex: 0 0 50px;
+        margin-right: 5px;
     }
 }
