@@ -39,8 +39,26 @@ function addTournament() {
     vl: +document.getElementById(`${p}-vl`).value
   }));
 
-  tournaments.push({ name, date, entries });
+  if (editId !== null) {
+    // Bearbeiten: Turnier aktualisieren
+    tournaments[editId] = { name, date, entries };
+    editId = null;
+  } else {
+    // Neues Turnier hinzufügen
+    tournaments.push({ name, date, entries });
+  }
+
   localStorage.setItem("tournaments", JSON.stringify(tournaments));
+
+  // Formular zurücksetzen
+  tournamentName.value = "";
+  tournamentDate.value = "";
+  players.forEach(p => {
+    document.getElementById(`${p}-s`).value = 0;
+    document.getElementById(`${p}-n`).value = 0;
+    document.getElementById(`${p}-gl`).value = 0;
+    document.getElementById(`${p}-vl`).value = 0;
+  });
 
   buildRanking();
 }
@@ -137,11 +155,28 @@ function renderTournaments() {
     return `
       <div class="card">
         <strong>${t.name}</strong> (${t.date})
+        <button class="edit-btn" onclick="editTournament(${idx})">Bearbeiten</button>
         <button class="delete-btn" onclick="deleteTournament(${idx})">Löschen</button>
         <div>${entriesHtml}</div>
       </div>
     `;
   }).join("");
+}
+
+// Bearbeiten-Funktion
+function editTournament(index) {
+  const t = tournaments[index];
+  tournamentName.value = t.name;
+  tournamentDate.value = t.date;
+
+  t.entries.forEach(e => {
+    document.getElementById(`${e.player}-s`).value = e.wins;
+    document.getElementById(`${e.player}-n`).value = e.losses;
+    document.getElementById(`${e.player}-gl`).value = e.gl;
+    document.getElementById(`${e.player}-vl`).value = e.vl;
+  });
+
+  editId = index;
 }
 
 function deleteTournament(index) {
@@ -154,4 +189,3 @@ function deleteTournament(index) {
 
 // Direkt beim Laden
 buildRanking();
-
