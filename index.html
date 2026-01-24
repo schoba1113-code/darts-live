@@ -20,16 +20,8 @@
     <input id="tName" placeholder="Turniername">
     <input id="tDate" type="date">
   </div>
-  <div class="form-row">
-    <select id="gamePlayer1">
-      <option value="">Spieler 1</option>
-    </select>
-    <select id="gamePlayer2">
-      <option value="">Spieler 2</option>
-    </select>
-    <button id="addGameBtn" class="secondary">Spiel hinzufügen</button>
-  </div>
-  <div id="gamesList"></div>
+  <div id="gameInputs"></div>
+  <button class="primary" id="addGameBtn">Spiel hinzufügen</button>
   <button class="primary" id="saveBtn">Turnier speichern</button>
   <button class="secondary" id="cancelBtn" style="display:none;">Abbrechen</button>
 </section>
@@ -101,215 +93,198 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const players = ["Pembe","Marki","Schoba"];
-const gamePlayer1 = document.getElementById("gamePlayer1");
-const gamePlayer2 = document.getElementById("gamePlayer2");
-const gamesList = document.getElementById("gamesList");
-const tName = document.getElementById("tName");
-const tDate = document.getElementById("tDate");
-const saveBtn = document.getElementById("saveBtn");
-const cancelBtn = document.getElementById("cancelBtn");
+const gameInputs = document.getElementById("gameInputs");
+const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
-const applyFilterBtn = document.getElementById("applyFilterBtn");
+const saveBtn = document.getElementById("saveBtn");
+const cancelBtn = document.getElementById("cancelBtn");
 const addGameBtn = document.getElementById("addGameBtn");
+const applyFilterBtn = document.getElementById("applyFilterBtn");
 
 let allTournaments = {};
-let editId = null;
 let currentGames = [];
-
-// Charts
+let editId = null;
 let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
 
-// Spieler Dropdowns
-function populatePlayerDropdowns(){
-  [gamePlayer1, gamePlayer2].forEach(select=>{
-    select.innerHTML = '<option value="">-- auswählen --</option>';
-    players.forEach(p=>{
-      select.innerHTML += `<option value="${p}">${p}</option>`;
-    });
-  });
-}
-populatePlayerDropdowns();
-
-// Spiel hinzufügen
-addGameBtn.addEventListener("click",()=>{
-  const p1 = gamePlayer1.value;
-  const p2 = gamePlayer2.value;
-  if(!p1 || !p2 || p1===p2){ alert("Bitte zwei unterschiedliche Spieler auswählen."); return;}
-  const game = {player1:p1,player2:p2,s1:0,s2:0,s3:0,avg1:0,avg2:0,dq1:0,dq2:0};
-  currentGames.push(game);
-  renderGames();
-});
-
-// Spiele rendern
-function renderGames(){
-  gamesList.innerHTML = "";
-  currentGames.forEach((g,i)=>{
+// Spiel hinzufügen UI
+function renderGames() {
+  gameInputs.innerHTML = "";
+  currentGames.forEach((g, i) => {
     const div = document.createElement("div");
-    div.className="player-row";
+    div.className = "player-row";
     div.innerHTML = `
-      <strong>${g.player1} vs ${g.player2}</strong>
-      <input type="number" placeholder="S1" value="${g.s1}" data-index="${i}" data-field="s1">
-      <input type="number" placeholder="S2" value="${g.s2}" data-index="${i}" data-field="s2">
-      <input type="number" placeholder="S3" value="${g.s3}" data-index="${i}" data-field="s3">
-      <input type="number" placeholder="AVG1" value="${g.avg1}" data-index="${i}" data-field="avg1">
-      <input type="number" placeholder="AVG2" value="${g.avg2}" data-index="${i}" data-field="avg2">
-      <input type="number" placeholder="DQ1 %" value="${g.dq1}" data-index="${i}" data-field="dq1">
-      <input type="number" placeholder="DQ2 %" value="${g.dq2}" data-index="${i}" data-field="dq2">
-      <button onclick="deleteGame(${i})" class="secondary">Löschen</button>
+      <select class="player1">${players.map(p=>`<option value="${p}" ${p===g.player1?'selected':''}>${p}</option>`).join('')}</select>
+      <select class="player2">${players.map(p=>`<option value="${p}" ${p===g.player2?'selected':''}>${p}</option>`).join('')}</select>
+      <input placeholder="S" value="${g.s}" class="s">
+      <input placeholder="N" value="${g.n}" class="n">
+      <input placeholder="GL" value="${g.gl}" class="gl">
+      <input placeholder="VL" value="${g.vl}" class="vl">
+      <input placeholder="AVG" value="${g.avg}" class="avg">
+      <input placeholder="DQ %" value="${g.dq}" class="dq">
+      <button onclick="deleteGame(${i})">❌</button>
     `;
-    gamesList.appendChild(div);
-  });
+    gameInputs.appendChild(div);
 
-  // Inputs live speichern
-  gamesList.querySelectorAll("input").forEach(input=>{
-    input.addEventListener("input", e=>{
-      const idx = e.target.dataset.index;
-      const field = e.target.dataset.field;
-      currentGames[idx][field] = e.target.valueAsNumber || 0;
-    });
+    // Inputs mit currentGames verbinden
+    const updateGame = () => {
+      const p1 = div.querySelector(".player1").value;
+      const p2 = div.querySelector(".player2").value;
+      const s = +div.querySelector(".s").value || 0;
+      const n = +div.querySelector(".n").value || 0;
+      const gl = +div.querySelector(".gl").value || 0;
+      const vl = +div.querySelector(".vl").value || 0;
+      const avg = +div.querySelector(".avg").value || 0;
+      const dq = +div.querySelector(".dq").value || 0;
+      currentGames[i] = {player1: p1, player2: p2, s, n, gl, vl, avg, dq};
+    };
+    div.querySelectorAll("input, select").forEach(inp => inp.addEventListener("input", updateGame));
   });
 }
 
-// Einzelnes Spiel löschen
-window.deleteGame = function(idx){
-  currentGames.splice(idx,1);
+// Spiel löschen
+window.deleteGame = (index) => {
+  if(!confirm("Spiel wirklich löschen?")) return;
+  currentGames.splice(index,1);
   renderGames();
 };
 
+// Neues Spiel hinzufügen
+addGameBtn.addEventListener("click", () => {
+  currentGames.push({player1:players[0], player2:players[1], s:0,n:0,gl:0,vl:0,avg:0,dq:0});
+  renderGames();
+});
+
 // Turnier speichern
-saveBtn.addEventListener("click", saveTournament);
-cancelBtn.addEventListener("click", cancelEdit);
-applyFilterBtn.addEventListener("click", renderAll);
-
-function saveTournament(){
-  if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
-  const data = {name:tName.value,date:tDate.value,players:{},games:[]};
-
-  // Spieler summieren
-  players.forEach(p=>{
-    data.players[p]={s:0,n:0,gl:0,vl:0,avg:0,dq:0};
-  });
-
-  if(editId && allTournaments[editId]?.games){
-    data.games = [...allTournaments[editId].games, ...currentGames];
-  } else {
-    data.games = [...currentGames];
-  }
-
-  // Berechnung pro Spieler
-  data.games.forEach(g=>{
-    data.players[g.player1].s += g.s1;
-    data.players[g.player1].n += g.s2;
-    data.players[g.player1].gl += g.s3;
-    data.players[g.player1].avg += g.avg1;
-    data.players[g.player1].dq += g.dq1;
-
-    data.players[g.player2].s += g.s2;
-    data.players[g.player2].n += g.s1;
-    data.players[g.player2].vl += g.s3;
-    data.players[g.player2].avg += g.avg2;
-    data.players[g.player2].dq += g.dq2;
-  });
+saveBtn.addEventListener("click", () => {
+  if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return; }
+  const data = {name: tName.value, date: tDate.value, games: currentGames};
 
   if(editId){
+    // Merge alte Spiele mit aktuellen, um Duplikate zu vermeiden
+    const oldGames = allTournaments[editId]?.games || [];
+    const mergedGames = [...oldGames, ...currentGames.slice(oldGames.length)];
+    data.games = mergedGames;
     update(ref(db,"tournaments/"+editId),data);
+    editId = null;
+    saveBtn.textContent = "Turnier speichern";
+    cancelBtn.style.display = "none";
   } else {
     push(ref(db,"tournaments"),data);
   }
 
-  editId = null;
-  currentGames = [];
   tName.value = "";
   tDate.value = "";
-}
+  currentGames = [];
+  renderGames();
+});
+
+// Turnier abbrechen
+cancelBtn.addEventListener("click", () => {
+  editId = null;
+  saveBtn.textContent = "Turnier speichern";
+  cancelBtn.style.display = "none";
+  tName.value = "";
+  tDate.value = "";
+  currentGames = [];
+  renderGames();
+});
 
 // Turnier löschen
-window.deleteTournament = function(id){
+window.deleteTournament = (id) => {
   if(!confirm("Turnier wirklich löschen?")) return;
   remove(ref(db,"tournaments/"+id));
 };
 
-// Bearbeiten
-window.editTournament = function(id){
+// Turnier bearbeiten
+window.editTournament = (id) => {
   const tRef = ref(db,"tournaments/"+id);
-  onValue(tRef, snap=>{
+  onValue(tRef, snap => {
     const t = snap.val();
     if(!t) return;
-    editId = id;
     tName.value = t.name;
     tDate.value = t.date;
-    currentGames = t.games ? [...t.games] : [];
+    currentGames = t.games || [];
     renderGames();
-  },{onlyOnce:true});
+    editId = id;
+    saveBtn.textContent = "Update";
+    cancelBtn.style.display = "inline-block";
+  }, {onlyOnce:true});
 };
 
 // Live Listener
-onValue(ref(db,"tournaments"),snap=>{
-  allTournaments = snap.val()||{};
+onValue(ref(db,"tournaments"), snap => {
+  allTournaments = snap.val() || {};
   buildYearFilter();
   renderAll();
 });
 
-// Filter bauen
-function buildYearFilter(){
+// Filter
+function buildYearFilter() {
   const years = new Set();
-  Object.values(allTournaments).forEach(t=>years.add(t.date.slice(0,4)));
-  yearFilter.innerHTML='<option value="all">Alle Jahre</option>';
-  [...years].sort().forEach(y=>yearFilter.innerHTML+=`<option value="${y}">${y}</option>`);
+  Object.values(allTournaments).forEach(t => years.add(t.date.slice(0,4)));
+  yearFilter.innerHTML = '<option value="all">Alle Jahre</option>';
+  [...years].sort().forEach(y => {
+    yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+  });
   buildMonthFilter();
 }
-function buildMonthFilter(){
+
+function buildMonthFilter() {
   const selectedYear = yearFilter.value;
   const months = new Set();
-  Object.values(allTournaments).forEach(t=>{
-    if(selectedYear==='all'||t.date.startsWith(selectedYear)) months.add(t.date.slice(5,7));
+  Object.values(allTournaments).forEach(t => {
+    if(selectedYear === "all" || t.date.startsWith(selectedYear)) months.add(t.date.slice(5,7));
   });
-  monthFilter.innerHTML='<option value="all">Alle Monate</option>';
-  [...months].sort().forEach(m=>{
-    const monthName = new Date(0,parseInt(m)-1).toLocaleString('de-DE',{month:'long'});
-    monthFilter.innerHTML+=`<option value="${m}">${monthName}</option>`;
+  monthFilter.innerHTML = '<option value="all">Alle Monate</option>';
+  [...months].sort().forEach(m => {
+    const monthName = new Date(0, parseInt(m)-1).toLocaleString('de-DE',{month:'long'});
+    monthFilter.innerHTML += `<option value="${m}">${monthName}</option>`;
   });
 }
 
 // Alle Turniere rendern
-function renderAll(){
+function renderAll() {
   const year = yearFilter.value;
   const month = monthFilter.value;
   const stats = {};
   const turnierLabels = [];
   players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
-  tournamentList.innerHTML="";
-  Object.entries(allTournaments).forEach(([id,t])=>{
-    if(year!=="all" && !t.date.startsWith(year)) return;
-    if(month!=="all" && t.date.slice(5,7)!==month) return;
+  tournamentList.innerHTML = "";
+  Object.entries(allTournaments).forEach(([id,t]) => {
+    if(year !== "all" && !t.date.startsWith(year)) return;
+    if(month !== "all" && t.date.slice(5,7) !== month) return;
 
     const div = document.createElement("div");
-    div.className="tournament";
+    div.className = "tournament";
     div.innerHTML = `<span>${t.name} (${t.date})</span>
-      <button onclick="editTournament('${id}')">Bearbeiten</button>
-      <button onclick="deleteTournament('${id}')">Löschen</button>`;
+                     <button onclick="editTournament('${id}')">Bearbeiten</button>
+                     <button onclick="deleteTournament('${id}')">Löschen</button>`;
     tournamentList.appendChild(div);
 
-    turnierLabels.push(t.name);
+    // Stats berechnen
+    t.games.forEach(g => {
+      [g.player1, g.player2].forEach(p => {
+        if(!stats[p]) stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]};
+      });
+      stats[g.player1].s += g.s;
+      stats[g.player1].n += g.n;
+      stats[g.player1].gl += g.gl;
+      stats[g.player1].vl += g.vl;
+      stats[g.player1].avg.push(g.avg);
+      stats[g.player1].dq.push(g.dq);
 
-    t.games.forEach(g=>{
-      stats[g.player1].s += g.s1;
-      stats[g.player1].n += g.s2;
-      stats[g.player1].gl += g.s3;
-      stats[g.player1].avg.push(g.avg1);
-      stats[g.player1].dq.push(g.dq1);
-      stats[g.player1].turniere.push(t.name);
-
-      stats[g.player2].s += g.s2;
-      stats[g.player2].n += g.s1;
-      stats[g.player2].vl += g.s3;
-      stats[g.player2].avg.push(g.avg2);
-      stats[g.player2].dq.push(g.dq2);
-      stats[g.player2].turniere.push(t.name);
+      stats[g.player2].s += g.s;
+      stats[g.player2].n += g.n;
+      stats[g.player2].gl += g.gl;
+      stats[g.player2].vl += g.vl;
+      stats[g.player2].avg.push(g.avg);
+      stats[g.player2].dq.push(g.dq);
     });
+
+    turnierLabels.push(t.name);
   });
 
   renderRanking(stats);
@@ -318,31 +293,30 @@ function renderAll(){
 
 // Rangliste rendern
 function renderRanking(stats){
-  const rankingDiv = document.getElementById("ranking");
   rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
   sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
 
-  const highestAVG = Math.max(...players.map(p=>stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
-  const bestDQ = Math.max(...players.map(p=>stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
-  const mostWins = Math.max(...players.map(p=>stats[p].s));
+  const highestAVG = Math.max(...players.map(p => stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
+  const bestDQ = Math.max(...players.map(p => stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
+  const mostWins = Math.max(...players.map(p => stats[p].s));
 
   sortable.forEach((r,i)=>{
     const medal = i<3?["🥇","🥈","🥉"][i]:"";
     const badges = [];
     const avgMean = r.avg.reduce((sum,v)=>sum+v,0)/Math.max(r.avg.length,1);
     const dqMean = r.dq.reduce((sum,v)=>sum+v,0)/Math.max(r.dq.length,1);
-    if(avgMean===highestAVG) badges.push("🌟");
-    if(dqMean===bestDQ) badges.push("⚡");
-    if(r.s===mostWins) badges.push("🏆");
+    if(avgMean === highestAVG) badges.push("🌟");
+    if(dqMean === bestDQ) badges.push("⚡");
+    if(r.s === mostWins) badges.push("🏆");
 
-    rankingDiv.innerHTML+=`<div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
+    rankingDiv.innerHTML += `<div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
       <span class="medal">${medal}</span> ${r.player} ${badges.join('')} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
     </div>`;
   });
 }
 
-// Charts rendern
+// Charts rendern (wie vorher)
 function renderCharts(stats, turnierLabels){
   const labels = turnierLabels.map((t,i)=>i+1);
   avgBarChart?.destroy();
@@ -354,40 +328,36 @@ function renderCharts(stats, turnierLabels){
 
   avgBarChart = new Chart(document.getElementById("avgBarChart"),{
     type:"bar",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,backgroundColor:["#f59e0b","#6b7280","#b87333"][i],borderRadius:5}))},
+    data:{labels,datasets: players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,backgroundColor:["#f59e0b","#6b7280","#b87333"][i],borderRadius:5}))},
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
   });
-
   avgTrendChart = new Chart(document.getElementById("avgTrendChart"),{
     type:"line",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,borderColor:["#f59e0b","#6b7280","#b87333"][i],backgroundColor:["#f59e0b","#6b7280","#b87333"][i],tension:0.3,fill:false,pointRadius:5}))},
+    data:{labels,datasets: players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,borderColor:["#f59e0b","#6b7280","#b87333"][i],backgroundColor:["#f59e0b","#6b7280","#b87333"][i],tension:0.3,fill:false,pointRadius:5}))},
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
   });
-
   dqBarChart = new Chart(document.getElementById("dqBarChart"),{
     type:"bar",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],borderRadius:5}))},
+    data:{labels,datasets: players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],borderRadius:5}))},
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
   });
-
   dqTrendChart = new Chart(document.getElementById("dqTrendChart"),{
     type:"line",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,borderColor:["#fde68a","#e5e7eb","#a97142"][i],backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],tension:0.3,fill:false,pointRadius:5}))},
+    data:{labels,datasets: players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,borderColor:["#fde68a","#e5e7eb","#a97142"][i],backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],tension:0.3,fill:false,pointRadius:5}))},
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
   });
-
   winsChart = new Chart(document.getElementById("winsChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Siege",data:players.map(p=>stats[p].s),backgroundColor:["#fde68a","#e5e7eb","#a97142"],borderRadius:8}]},
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Siege: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}}
   });
-
   diffChart = new Chart(document.getElementById("diffChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Differenz (GL-VL)",data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fcd34d","#d1d5db","#b87333"],borderRadius:8}]},
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Diff: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}}
   });
 }
+
 </script>
 </body>
 </html>
