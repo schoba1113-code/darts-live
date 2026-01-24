@@ -126,32 +126,28 @@ applyFilterBtn.addEventListener("click", renderAll);
 
 function saveTournament() {
   if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
+  const data = {name: tName.value, date: tDate.value, players:{}};
+  players.forEach(p=>{
+    data.players[p]={
+      s:+document.getElementById(`${p}-s`).value||0,
+      n:+document.getElementById(`${p}-n`).value||0,
+      gl:+document.getElementById(`${p}-gl`).value||0,
+      vl:+document.getElementById(`${p}-vl`).value||0,
+      avg:+document.getElementById(`${p}-avg`).value||0,
+      dq:+document.getElementById(`${p}-dq`).value||0
+    };
+  });
 
-  // Prüfen ob Turnier schon existiert (editId)
-  const tRef = editId ? ref(db,"tournaments/"+editId) : push(ref(db,"tournaments"));
-  
-  // Wenn edit, alle alten Spielerwerte laden, um Teilspiele zu behalten
-  onValue(tRef, snap=>{
-    const oldData = snap.val() || {players:{}};
-    const data = {name: tName.value, date: tDate.value, players:{}};
-    players.forEach(p=>{
-      const old = oldData.players[p] || {s:0,n:0,gl:0,vl:0,avg:[],dq:[]};
-      data.players[p] = {
-        s: old.s + (+document.getElementById(`${p}-s`).value||0),
-        n: old.n + (+document.getElementById(`${p}-n`).value||0),
-        gl: old.gl + (+document.getElementById(`${p}-gl`).value||0),
-        vl: old.vl + (+document.getElementById(`${p}-vl`).value||0),
-        avg: old.avg.concat(+document.getElementById(`${p}-avg`).value||0),
-        dq: old.dq.concat(+document.getElementById(`${p}-dq`).value||0)
-      };
-    });
-
-    update(tRef, data);
+  if(editId){
+    update(ref(db,"tournaments/"+editId),data);
     editId = null;
     saveBtn.textContent = "Turnier speichern";
     cancelBtn.style.display = "none";
-    document.querySelectorAll("input").forEach(i=>i.value="");
-  }, {onlyOnce:true});
+  } else {
+    push(ref(db,"tournaments"),data);
+  }
+
+  document.querySelectorAll("input").forEach(i=>i.value="");
 }
 
 function cancelEdit() {
@@ -176,16 +172,14 @@ window.editTournament = function(id){
 
     tName.value = t.name;
     tDate.value = t.date;
-    
     players.forEach(p=>{
       const d = t.players[p];
-      // Zeige nur das letzte Spiel als Input für neuen Eintrag
-      document.getElementById(`${p}-s`).value = 0;
-      document.getElementById(`${p}-n`).value = 0;
-      document.getElementById(`${p}-gl`).value = 0;
-      document.getElementById(`${p}-vl`).value = 0;
-      document.getElementById(`${p}-avg`).value = 0;
-      document.getElementById(`${p}-dq`).value = 0;
+      document.getElementById(`${p}-s`).value = d.s;
+      document.getElementById(`${p}-n`).value = d.n;
+      document.getElementById(`${p}-gl`).value = d.gl;
+      document.getElementById(`${p}-vl`).value = d.vl;
+      document.getElementById(`${p}-avg`).value = d.avg;
+      document.getElementById(`${p}-dq`).value = d.dq;
     });
 
     editId = id;
@@ -243,21 +237,10 @@ function renderAll(){
 
     const div = document.createElement("div");
     div.className = "tournament";
-    
-    // Übersicht aller gespeicherten Spiele
-    let gamesHTML = "";
-    players.forEach(p=>{
-      const d = t.players[p];
-      d.avg.forEach((avg,i)=>{
-        gamesHTML += `<div>${p} | S:${d.s} N:${d.n} GL:${d.gl} VL:${d.vl} AVG:${d.avg[i]} DQ:${d.dq[i]}</div>`;
-      });
-    });
-
     div.innerHTML = `
       <span>${t.name} (${t.date})</span>
       <button onclick="editTournament('${id}')">Bearbeiten</button>
       <button onclick="deleteTournament('${id}')">Löschen</button>
-      <div style="margin-top:5px; font-size:0.9rem; border-top:1px solid #ccc; padding-top:5px;">${gamesHTML}</div>
     `;
     tournamentList.appendChild(div);
 
@@ -268,8 +251,8 @@ function renderAll(){
       stats[p].n += d.n;
       stats[p].gl += d.gl;
       stats[p].vl += d.vl;
-      stats[p].avg.push(...d.avg);
-      stats[p].dq.push(...d.dq);
+      stats[p].avg.push(d.avg);
+      stats[p].dq.push(d.dq);
       stats[p].turniere.push(t.name);
     });
   });
@@ -278,12 +261,13 @@ function renderAll(){
   renderCharts(stats, turnierLabels);
 }
 
-// Rangliste rendern
+// Rangliste rendern mit Achievements
 function renderRanking(stats){
   rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
   sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
 
+  // Achievements berechnen
   const highestAVG = Math.max(...players.map(p => stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
   const bestDQ = Math.max(...players.map(p => stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
   const mostWins = Math.max(...players.map(p => stats[p].s));
@@ -315,6 +299,7 @@ function renderCharts(stats, turnierLabels){
   winsChart?.destroy();
   diffChart?.destroy();
 
+  // AVG Balken
   avgBarChart = new Chart(document.getElementById("avgBarChart"),{
     type:"bar",
     data:{
@@ -329,6 +314,7 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
   });
 
+  // AVG Trend Linie
   avgTrendChart = new Chart(document.getElementById("avgTrendChart"),{
     type:"line",
     data:{
@@ -346,6 +332,7 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
   });
 
+  // DQ Balken
   dqBarChart = new Chart(document.getElementById("dqBarChart"),{
     type:"bar",
     data:{
@@ -360,6 +347,7 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
   });
 
+  // DQ Trend Linie
   dqTrendChart = new Chart(document.getElementById("dqTrendChart"),{
     type:"line",
     data:{
@@ -377,12 +365,14 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
   });
 
+  // Siege
   winsChart = new Chart(document.getElementById("winsChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Siege",data:players.map(p=>stats[p].s),backgroundColor:["#fde68a","#e5e7eb","#a97142"],borderRadius:8}]},
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Siege: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}}
   });
 
+  // Differenz
   diffChart = new Chart(document.getElementById("diffChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Differenz (GL-VL)",data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fcd34d","#d1d5db","#b87333"],borderRadius:8}]},
