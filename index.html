@@ -83,7 +83,7 @@ const firebaseConfig = {
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
   databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "darts-turniere-dacfc",
-  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
+  storageBucket: "darts-turniere-dacfc.appspot.com",
   messagingSenderId: "779378324704",
   appId: "1:779378324704:web:88aaf743660af6c138cc85"
 };
@@ -100,10 +100,13 @@ const monthFilter = document.getElementById("monthFilter");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 const applyFilterBtn = document.getElementById("applyFilterBtn");
+const tName = document.getElementById("tName");
+const tDate = document.getElementById("tDate");
 
 let allTournaments = {};
 let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
 let editId = null;
+let currentGames = []; // Zwischengespeicherte Spiele während Bearbeitung
 
 // Spieler Inputs erzeugen
 players.forEach(p=>{
@@ -119,24 +122,34 @@ players.forEach(p=>{
   </div>`;
 });
 
-// Save/Update Button
+// Event Listener
 saveBtn.addEventListener("click", saveTournament);
 cancelBtn.addEventListener("click", cancelEdit);
 applyFilterBtn.addEventListener("click", renderAll);
 
+// Turnier speichern oder aktualisieren
 function saveTournament() {
   if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
-  const data = {name: tName.value, date: tDate.value, players:{}};
+
+  // Bestehende Spiele laden oder neues Array
+  let gamesToSave = [...currentGames];
+
+  // Neues Spiel aus Inputs hinzufügen
+  const gameData = {};
   players.forEach(p=>{
-    data.players[p]={
-      s:+document.getElementById(`${p}-s`).value||0,
-      n:+document.getElementById(`${p}-n`).value||0,
-      gl:+document.getElementById(`${p}-gl`).value||0,
-      vl:+document.getElementById(`${p}-vl`).value||0,
-      avg:+document.getElementById(`${p}-avg`).value||0,
-      dq:+document.getElementById(`${p}-dq`).value||0
+    gameData[p] = {
+      s: +document.getElementById(`${p}-s`).value||0,
+      n: +document.getElementById(`${p}-n`).value||0,
+      gl: +document.getElementById(`${p}-gl`).value||0,
+      vl: +document.getElementById(`${p}-vl`).value||0,
+      avg: +document.getElementById(`${p}-avg`).value||0,
+      dq: +document.getElementById(`${p}-dq`).value||0
     };
   });
+  gamesToSave.push(gameData);
+
+  // Turnierdaten vorbereiten
+  const data = {name: tName.value, date: tDate.value, games: gamesToSave};
 
   if(editId){
     update(ref(db,"tournaments/"+editId),data);
@@ -147,11 +160,15 @@ function saveTournament() {
     push(ref(db,"tournaments"),data);
   }
 
+  // Inputs zurücksetzen
   document.querySelectorAll("input").forEach(i=>i.value="");
+  currentGames = [];
 }
 
+// Edit abbrechen
 function cancelEdit() {
   editId = null;
+  currentGames = [];
   saveBtn.textContent = "Turnier speichern";
   cancelBtn.style.display = "none";
   document.querySelectorAll("input").forEach(i=>i.value="");
@@ -163,24 +180,33 @@ window.deleteTournament = function(id){
   remove(ref(db,"tournaments/"+id));
 };
 
-// Bearbeiten-Funktion
+// Turnier bearbeiten
 window.editTournament = function(id){
   const tRef = ref(db,"tournaments/"+id);
-  onValue(tRef, snap => {
+  onValue(tRef, snap=>{
     const t = snap.val();
     if(!t) return;
 
     tName.value = t.name;
     tDate.value = t.date;
-    players.forEach(p=>{
-      const d = t.players[p];
-      document.getElementById(`${p}-s`).value = d.s;
-      document.getElementById(`${p}-n`).value = d.n;
-      document.getElementById(`${p}-gl`).value = d.gl;
-      document.getElementById(`${p}-vl`).value = d.vl;
-      document.getElementById(`${p}-avg`).value = d.avg;
-      document.getElementById(`${p}-dq`).value = d.dq;
-    });
+
+    // Bereits gespeicherte Spiele laden
+    currentGames = t.games ? [...t.games] : [];
+
+    // Letztes Spiel im Inputs anzeigen (optional, kann leer bleiben)
+    if(currentGames.length > 0){
+      const lastGame = currentGames[currentGames.length-1];
+      players.forEach(p=>{
+        document.getElementById(`${p}-s`).value = lastGame[p].s;
+        document.getElementById(`${p}-n`).value = lastGame[p].n;
+        document.getElementById(`${p}-gl`).value = lastGame[p].gl;
+        document.getElementById(`${p}-vl`).value = lastGame[p].vl;
+        document.getElementById(`${p}-avg`).value = lastGame[p].avg;
+        document.getElementById(`${p}-dq`).value = lastGame[p].dq;
+      });
+    } else {
+      document.querySelectorAll("input").forEach(i=>i.value="");
+    }
 
     editId = id;
     saveBtn.textContent = "Update";
@@ -200,7 +226,7 @@ function buildYearFilter() {
   const years = new Set();
   Object.values(allTournaments).forEach(t => years.add(t.date.slice(0,4)));
   yearFilter.innerHTML = '<option value="all">Alle Jahre</option>';
-  [...years].sort().forEach(y => {
+  [...years].sort().forEach(y=>{
     yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
   });
   buildMonthFilter();
@@ -210,25 +236,23 @@ function buildYearFilter() {
 function buildMonthFilter() {
   const selectedYear = yearFilter.value;
   const months = new Set();
-  Object.values(allTournaments).forEach(t => {
-    if(selectedYear === "all" || t.date.startsWith(selectedYear)) {
-      months.add(t.date.slice(5,7));
-    }
+  Object.values(allTournaments).forEach(t=>{
+    if(selectedYear === "all" || t.date.startsWith(selectedYear)) months.add(t.date.slice(5,7));
   });
   monthFilter.innerHTML = '<option value="all">Alle Monate</option>';
-  [...months].sort().forEach(m => {
-    const monthName = new Date(0, parseInt(m)-1).toLocaleString('de-DE', {month:'long'});
+  [...months].sort().forEach(m=>{
+    const monthName = new Date(0, parseInt(m)-1).toLocaleString('de-DE',{month:'long'});
     monthFilter.innerHTML += `<option value="${m}">${monthName}</option>`;
   });
 }
 
-// Alle Turniere rendern mit Jahr + Monat
+// Alle Turniere rendern
 function renderAll(){
   const year = yearFilter.value;
   const month = monthFilter.value;
   const stats = {};
   const turnierLabels = [];
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[]});
 
   tournamentList.innerHTML = "";
   Object.entries(allTournaments).forEach(([id,t])=>{
@@ -245,15 +269,15 @@ function renderAll(){
     tournamentList.appendChild(div);
 
     turnierLabels.push(t.name);
-    players.forEach(p=>{
-      const d = t.players[p];
-      stats[p].s += d.s;
-      stats[p].n += d.n;
-      stats[p].gl += d.gl;
-      stats[p].vl += d.vl;
-      stats[p].avg.push(d.avg);
-      stats[p].dq.push(d.dq);
-      stats[p].turniere.push(t.name);
+    t.games.forEach(g=>{
+      players.forEach(p=>{
+        stats[p].s += g[p].s;
+        stats[p].n += g[p].n;
+        stats[p].gl += g[p].gl;
+        stats[p].vl += g[p].vl;
+        stats[p].avg.push(g[p].avg);
+        stats[p].dq.push(g[p].dq);
+      });
     });
   });
 
@@ -261,13 +285,12 @@ function renderAll(){
   renderCharts(stats, turnierLabels);
 }
 
-// Rangliste rendern mit Achievements
+// Rangliste
 function renderRanking(stats){
   rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
   sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
 
-  // Achievements berechnen
   const highestAVG = Math.max(...players.map(p => stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
   const bestDQ = Math.max(...players.map(p => stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
   const mostWins = Math.max(...players.map(p => stats[p].s));
@@ -299,80 +322,39 @@ function renderCharts(stats, turnierLabels){
   winsChart?.destroy();
   diffChart?.destroy();
 
-  // AVG Balken
   avgBarChart = new Chart(document.getElementById("avgBarChart"),{
     type:"bar",
     data:{
       labels,
-      datasets: players.map((p,i)=>({
-        label:p+" AVG",
-        data: stats[p].avg,
-        backgroundColor:["#f59e0b","#6b7280","#b87333"][i],
-        borderRadius:5
-      }))
+      datasets: players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,backgroundColor:["#f59e0b","#6b7280","#b87333"][i],borderRadius:5}))
     },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
   });
 
-  // AVG Trend Linie
   avgTrendChart = new Chart(document.getElementById("avgTrendChart"),{
     type:"line",
-    data:{
-      labels,
-      datasets: players.map((p,i)=>({
-        label:p+" AVG",
-        data: stats[p].avg,
-        borderColor:["#f59e0b","#6b7280","#b87333"][i],
-        backgroundColor:["#f59e0b","#6b7280","#b87333"][i],
-        tension:0.3,
-        fill:false,
-        pointRadius:5
-      }))
-    },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
+    data:{labels,datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,borderColor:["#f59e0b","#6b7280","#b87333"][i],backgroundColor:["#f59e0b","#6b7280","#b87333"][i],tension:0.3,fill:false,pointRadius:5}))},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
   });
 
-  // DQ Balken
   dqBarChart = new Chart(document.getElementById("dqBarChart"),{
     type:"bar",
-    data:{
-      labels,
-      datasets: players.map((p,i)=>({
-        label:p+" DQ %",
-        data: stats[p].dq,
-        backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],
-        borderRadius:5
-      }))
-    },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
+    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],borderRadius:5}))},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
   });
 
-  // DQ Trend Linie
   dqTrendChart = new Chart(document.getElementById("dqTrendChart"),{
     type:"line",
-    data:{
-      labels,
-      datasets: players.map((p,i)=>({
-        label:p+" DQ %",
-        data: stats[p].dq,
-        borderColor:["#fde68a","#e5e7eb","#a97142"][i],
-        backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],
-        tension:0.3,
-        fill:false,
-        pointRadius:5
-      }))
-    },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
+    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,borderColor:["#fde68a","#e5e7eb","#a97142"][i],backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],tension:0.3,fill:false,pointRadius:5}))},
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
   });
 
-  // Siege
   winsChart = new Chart(document.getElementById("winsChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Siege",data:players.map(p=>stats[p].s),backgroundColor:["#fde68a","#e5e7eb","#a97142"],borderRadius:8}]},
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Siege: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}}
   });
 
-  // Differenz
   diffChart = new Chart(document.getElementById("diffChart"),{
     type:"bar",
     data:{labels:players,datasets:[{label:"Differenz (GL-VL)",data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fcd34d","#d1d5db","#b87333"],borderRadius:8}]},
