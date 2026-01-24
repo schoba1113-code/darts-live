@@ -1,144 +1,233 @@
-/* Grundlayout */
+/* =========================
+   RESET & BASIS
+========================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f9fafb;
-    color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 12px;
 }
 
 .app {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
+  max-width: 480px;
+  margin: auto;
 }
 
+/* =========================
+   HEADER
+========================= */
 header {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 16px;
 }
 
 header h1 {
-    font-size: 2rem;
+  font-size: 1.6rem;
+  font-weight: 700;
 }
 
+/* =========================
+   CARDS
+========================= */
 .card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  background: #020617;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
 }
 
+.card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.card h3 {
+  font-size: 1rem;
+  margin: 10px 0;
+  color: #cbd5f5;
+}
+
+/* =========================
+   FORM LAYOUT
+========================= */
 .form-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    overflow-x: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.form-row input[type="text"],
-.form-row input[type="date"],
-.form-row select {
-    padding: 10px 12px;
-    border: 1px solid #3b82f6;
-    border-radius: 10px;
-    background-color: #ffffff;
-    font-size: 1rem;
-    color: #111827;
-    flex: 1 1 auto;
-    min-width: 120px;
-    white-space: nowrap;
+/* =========================
+   INPUTS & SELECTS
+========================= */
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  border: none;
+  background: #020617;
+  color: #e5e7eb;
+  outline: 1px solid #334155;
 }
 
-.form-row input::placeholder {
-    color: #6b7280;
+input::placeholder {
+  color: #94a3b8;
 }
 
-input {
-    width: 60px;
-    padding: 6px;
-    margin: 0 5px 5px 0;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    text-align: center;
-    font-size: 0.9rem;
-    background-color: #ffffff;
+input[type="date"] {
+  color-scheme: dark;
 }
 
-button {
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 10px;
-    border: none;
-    padding: 10px 16px;
-    font-size: 1rem;
-    transition: all 0.2s;
+select {
+  appearance: none;
 }
 
-button.primary { background-color: #2563eb; color: #fff; min-width: 120px; }
-button.primary:hover { background-color: #1d4ed8; transform: scale(1.05); }
-button.secondary { background-color: #9ca3af; color: #fff; min-width: 120px; }
-button.secondary:hover { background-color: #6b7280; transform: scale(1.05); }
-#applyFilterBtn { background-color: #10b981; color: #fff; }
-#applyFilterBtn:hover { background-color: #059669; }
-
+/* =========================
+   PLAYER ROW (WICHTIG)
+========================= */
 .player-row {
-    display: flex;
-    align-items: center;
-    overflow-x: auto;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 90px repeat(6, 1fr);
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .player-row strong {
-    flex: 0 0 80px;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .player-row input {
-    flex: 0 0 50px;
-    margin-right: 5px;
+  padding: 8px;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
+/* =========================
+   BUTTONS
+========================= */
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.primary {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #020617;
+}
+
+button.secondary {
+  background: #334155;
+  color: #e5e7eb;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   GAME LIST
+========================= */
+#gameList {
+  list-style: none;
+  margin-top: 8px;
+}
+
+#gameList li {
+  font-size: 0.85rem;
+  padding: 6px 0;
+  border-bottom: 1px solid #1e293b;
+}
+
+/* =========================
+   RANGLISTE
+========================= */
 .rank-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 5px;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
 }
 
-.rank-row.gold { background-color: #fcd34d; }
-.rank-row.silver { background-color: #e5e7eb; }
-.rank-row.bronze { background-color: #b87333; }
+.rank-row.gold {
+  background: #92400e;
+}
 
-.rank-row .medal { margin-right: 8px; font-size: 1.2rem; }
+.rank-row.silver {
+  background: #374151;
+}
 
+.rank-row.bronze {
+  background: #78350f;
+}
+
+.rank-row .medal {
+  font-size: 1.2rem;
+}
+
+/* =========================
+   TURNIER LISTE
+========================= */
 .tournament {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f3f4f6;
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    border-radius: 8px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: #020617;
+  outline: 1px solid #1e293b;
 }
 
-.tournament button { margin-top: 5px; }
+.tournament span {
+  font-size: 0.9rem;
+  flex: 1;
+}
 
+.tournament button {
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}
+
+/* =========================
+   CHARTS
+========================= */
 canvas {
-    width: 100% !important;
-    max-height: 300px;
-    margin-top: 15px;
+  width: 100% !important;
+  height: 220px !important;
 }
 
-@media (max-width: 600px) {
-    .form-row { flex-direction: column; align-items: stretch; }
-    .rank-row { flex-direction: column; align-items: flex-start; }
-    .tournament { flex-direction: column; align-items: flex-start; }
-    button { margin-bottom: 5px; }
-    .player-row input { flex: 0 0 50px; margin-right: 5px; }
+/* =========================
+   MOBILE FEINSCHLIFF
+========================= */
+@media (max-width: 420px) {
+  .player-row {
+    grid-template-columns: 70px repeat(6, 1fr);
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  canvas {
+    height: 200px !important;
+  }
 }
