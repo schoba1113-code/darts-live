@@ -83,7 +83,7 @@ const firebaseConfig = {
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
   databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "darts-turniere-dacfc",
-  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
+  storageBucket: "darts-turniere-dacfc.appspot.com",
   messagingSenderId: "779378324704",
   appId: "1:779378324704:web:88aaf743660af6c138cc85"
 };
@@ -189,7 +189,7 @@ window.editTournament = function(id){
 onValue(ref(db,"tournaments"),snap=>{
   allTournaments = snap.val()||{};
   buildYearFilter();
-  // renderAll();  <-- nicht mehr automatisch
+  renderAll(); // <-- automatisch alles anzeigen, wenn kein Filter gesetzt
 });
 
 // Jahresfilter bauen
