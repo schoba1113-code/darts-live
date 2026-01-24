@@ -1,56 +1,174 @@
+/* Grundlayout */
 body {
-  margin: 0;
-  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu;
-  background: #f4f6f8;
-  color: #1f2933;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9fafb;
+    color: #111827;
 }
 
 .app {
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
 }
 
-header{text-align:center;margin-bottom:20px}
-
-header h1{margin:0}
-
-.card{
-  background:#fff;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-  box-shadow:0 8px 24px rgba(0,0,0,.05);
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.form-row{display:flex;gap:10px;margin-bottom:10px}
-
-input,select{padding:8px;border-radius:8px;border:1px solid #d1d5db;width:100%;box-sizing:border-box}
-
-.player-row{display:grid;grid-template-columns:120px repeat(6,1fr);gap:6px;margin-bottom:6px;align-items:center}
-.player-row strong{font-weight:600}
-
-.primary{
-  margin-top:10px;padding:10px;border:none;border-radius:10px;
-  background:#2563eb;color:#fff;font-weight:600;cursor:pointer
+header h1 {
+    font-size: 2rem;
 }
-.primary:hover{background:#1d4ed8}
 
-.rank-row{
-  padding:6px;
-  border-bottom:1px solid #e5e7eb;
-  display:flex;
-  align-items:center;
-  gap:6px;
+/* Karten */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
-.rank-row.gold{background:#fde68a}
-.rank-row.silver{background:#e5e7eb;color:#374151}
-.rank-row.bronze{background:#a97142;color:#fff}
 
-.medal{font-size:20px;margin-right:6px}
+/* Formulareingaben */
+input {
+    width: 60px;
+    padding: 5px;
+    margin: 0 5px 5px 0;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    text-align: center;
+    font-size: 0.9rem;
+}
 
-.tournament{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #e5e7eb}
-.tournament button{border:none;background:#ef4444;color:#fff;border-radius:6px;padding:4px 8px;cursor:pointer}
-.tournament button:hover{background:#dc2626}
+input::placeholder {
+    color: #9ca3af;
+}
 
-canvas{margin-top:20px;max-width:100%}
+/* Buttons */
+button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+button.primary {
+    background-color: #2563eb;
+    color: #fff;
+    transition: background-color 0.2s;
+}
+
+button.primary:hover {
+    background-color: #1d4ed8;
+}
+
+button.secondary {
+    background-color: #6b7280;
+    color: #fff;
+    transition: background-color 0.2s;
+}
+
+button.secondary:hover {
+    background-color: #4b5563;
+}
+
+.delete-btn {
+    background-color: #ef4444;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.delete-btn:hover {
+    background-color: #b91c1c;
+}
+
+/* Spielerreihe */
+.player-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.player-row strong {
+    width: 80px;
+}
+
+/* Rangliste */
+.rank-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+/* Medaillenfarben */
+.rank-row.gold {
+    background-color: #fcd34d; /* helles Gold */
+}
+
+.rank-row.silver {
+    background-color: #e5e7eb; /* Silber/Grau */
+}
+
+.rank-row.bronze {
+    background-color: #b87333; /* Bronze */
+}
+
+/* Medaillen Emoji */
+.rank-row .medal {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* Turnierliste */
+.tournament {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+}
+
+.tournament button {
+    margin-left: 5px;
+}
+
+/* Charts */
+canvas {
+    width: 100% !important;
+    max-height: 300px;
+    margin-top: 15px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .player-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    input {
+        margin-bottom: 5px;
+    }
+    .rank-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .tournament {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    button {
+        margin-bottom: 5px;
+    }
+}
