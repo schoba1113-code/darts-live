@@ -38,6 +38,7 @@ header h1 {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
+    overflow-x: auto; /* Scroll bei kleinen Displays */
 }
 
 .form-row input[type="text"],
@@ -48,11 +49,18 @@ header h1 {
     background-color: #ffffff;
     font-size: 1rem;
     color: #111827;
+    flex: 1 1 auto; /* Eingabefelder wachsen, damit Text nicht abgeschnitten wird */
+    min-width: 120px; /* kleine Breite für Hochformat */
+    white-space: nowrap;
 }
 
-.form-row input[type="text"]::placeholder,
+.form-row input[type="text"]::placeholder {
+    color: #6b7280;
+}
+
 .form-row input[type="date"]::placeholder {
     color: #6b7280;
+    content: "Datum"; /* Hinweis falls Feld leer */
 }
 
 /* Formulareingaben Spieler */
@@ -82,21 +90,11 @@ button {
 button.primary {
     background-color: #2563eb;
     color: #fff;
+    min-width: 120px;
 }
 
 button.primary:hover {
     background-color: #1d4ed8;
-    transform: scale(1.05);
-}
-
-/* Allgemeine Sekundär-Buttons */
-button.secondary {
-    background-color: #6b7280;
-    color: #fff;
-}
-
-button.secondary:hover {
-    background-color: #4b5563;
     transform: scale(1.05);
 }
 
@@ -169,10 +167,11 @@ button.secondary:hover {
     padding: 8px 12px;
     margin-bottom: 6px;
     border-radius: 8px;
+    flex-wrap: wrap; /* Zeilen umbrechbar für kleine Displays */
 }
 
 .tournament button {
-    margin-left: 5px;
+    margin-top: 5px;
 }
 
 /* Charts */
@@ -182,7 +181,7 @@ canvas {
     margin-top: 15px;
 }
 
-/* Responsive Anpassungen */
+/* Responsive Anpassungen für iPhone Hochformat */
 @media (max-width: 600px) {
     .form-row {
         flex-direction: column;
