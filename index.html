@@ -10,40 +10,48 @@
 <body>
 
 <div class="app">
-<header><h1>🎯 Darts Rangliste</h1></header>
+<header>
+  <h1>🎯 Darts Rangliste</h1>
+</header>
 
 <section class="card">
-<h2 id="formTitle">Turnier erfassen</h2>
-<div class="form-row">
-<input id="tName" placeholder="Turniername">
-<input id="tDate" type="date">
-</div>
-<div id="players"></div>
-<button class="primary" id="saveBtn">Turnier speichern</button>
+  <h2>Turnier erfassen</h2>
+  <div class="form-row">
+    <input id="tName" placeholder="Turniername">
+    <input id="tDate" type="date">
+  </div>
+  <div id="players"></div>
+  <button class="primary" onclick="saveTournament()">Turnier speichern</button>
 </section>
 
 <section class="card">
-<h2>Gesamtrangliste</h2>
-<div id="ranking"></div>
+  <h2>Jahreswertung</h2>
+  <select id="yearFilter" onchange="renderAll()"></select>
 </section>
 
 <section class="card">
-<h2>Turniere</h2>
-<div id="tournamentList"></div>
+  <h2>Gesamtrangliste</h2>
+  <div id="ranking"></div>
 </section>
 
 <section class="card">
-<h2>Statistiken</h2>
-<canvas id="avgChart"></canvas>
-<canvas id="dqChart"></canvas>
-<canvas id="winsChart"></canvas>
-<canvas id="diffChart"></canvas>
+  <h2>Gespeicherte Turniere</h2>
+  <div id="tournamentList"></div>
 </section>
+
+<section class="card">
+  <h2>Statistiken</h2>
+  <canvas id="avgChart"></canvas>
+  <canvas id="dqChart"></canvas>
+  <canvas id="winsChart"></canvas>
+  <canvas id="diffChart"></canvas>
+</section>
+
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
@@ -57,33 +65,31 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
 const players = ["Pembe","Marki","Schoba"];
-const playerDiv = document.getElementById("players");
-const rankingDiv = document.getElementById("ranking");
-const tournamentList = document.getElementById("tournamentList");
+const playerDiv=document.getElementById("players");
+const rankingDiv=document.getElementById("ranking");
+const tournamentList=document.getElementById("tournamentList");
+const yearFilter=document.getElementById("yearFilter");
 
-let editId = null;
 let allTournaments = {};
-let avgChart, dqChart, winsChart, diffChart;
+let avgChart,dqChart,winsChart,diffChart;
 
 players.forEach(p=>{
   playerDiv.innerHTML += `
   <div class="player-row">
     <strong>${p}</strong>
-    <input id="${p}-s" placeholder="S">
-    <input id="${p}-n" placeholder="N">
-    <input id="${p}-gl" placeholder="GL">
-    <input id="${p}-vl" placeholder="VL">
-    <input id="${p}-avg" placeholder="AVG">
-    <input id="${p}-dq" placeholder="DQ %">
+    <input placeholder="S" id="${p}-s">
+    <input placeholder="N" id="${p}-n">
+    <input placeholder="GL" id="${p}-gl">
+    <input placeholder="VL" id="${p}-vl">
+    <input placeholder="AVG" id="${p}-avg">
+    <input placeholder="DQ %" id="${p}-dq">
   </div>`;
 });
 
-saveBtn.onclick = () => {
-  if(!tName.value || !tDate.value) return alert("Name & Datum fehlen");
-
-  const data = {name:tName.value, date:tDate.value, players:{}};
+window.saveTournament = function() {
+  if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
+  const data = {name: tName.value, date: tDate.value, players:{}};
   players.forEach(p=>{
     data.players[p]={
       s:+document.getElementById(`${p}-s`).value||0,
@@ -94,37 +100,47 @@ saveBtn.onclick = () => {
       dq:+document.getElementById(`${p}-dq`).value||0
     };
   });
-
-  editId
-    ? update(ref(db,"tournaments/"+editId),data)
-    : push(ref(db,"tournaments"),data);
-
-  editId=null;
-  saveBtn.textContent="Turnier speichern";
-  formTitle.textContent="Turnier erfassen";
+  push(ref(db,"tournaments"),data);
   document.querySelectorAll("input").forEach(i=>i.value="");
+};
+
+window.deleteTournament = function(id){
+  if(!confirm("Turnier wirklich löschen?")) return;
+  remove(ref(db,"tournaments/"+id));
 };
 
 onValue(ref(db,"tournaments"),snap=>{
   allTournaments = snap.val()||{};
+  buildYearFilter();
   renderAll();
 });
 
+function buildYearFilter(){
+  const years = new Set();
+  Object.values(allTournaments).forEach(t=>years.add(t.date.slice(0,4)));
+  yearFilter.innerHTML='<option value="all">Alle</option>';
+  [...years].sort().forEach(y=>{
+    yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+  });
+}
+
 function renderAll(){
+  const year=yearFilter.value;
   const stats={};
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[]});
-  tournamentList.innerHTML="";
+  const turnierLabels=[];
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
+  tournamentList.innerHTML = "";
   Object.entries(allTournaments).forEach(([id,t])=>{
-    tournamentList.innerHTML+=`
-    <div class="tournament">
-      <span>${t.name} (${t.date})</span>
-      <div>
-        <button onclick="edit('${id}')">✏️</button>
-        <button onclick="del('${id}')">🗑️</button>
-      </div>
-    </div>`;
+    if(year!=="all" && !t.date.startsWith(year)) return;
 
+    const div=document.createElement("div");
+    div.className="tournament";
+    div.innerHTML=`<span>${t.name} (${t.date})</span>
+      <button onclick="deleteTournament('${id}')">Löschen</button>`;
+    tournamentList.appendChild(div);
+
+    turnierLabels.push(t.name);
     players.forEach(p=>{
       const d=t.players[p];
       stats[p].s+=d.s;
@@ -133,64 +149,143 @@ function renderAll(){
       stats[p].vl+=d.vl;
       stats[p].avg.push(d.avg);
       stats[p].dq.push(d.dq);
+      stats[p].turniere.push(t.name);
     });
   });
 
   renderRanking(stats);
-  renderCharts(stats);
+  renderCharts(stats, turnierLabels);
 }
-
-window.edit=id=>{
-  editId=id;
-  const t=allTournaments[id];
-  tName.value=t.name; tDate.value=t.date;
-  players.forEach(p=>{
-    const d=t.players[p];
-    ["s","n","gl","vl","avg","dq"].forEach(k=>{
-      document.getElementById(`${p}-${k}`).value=d[k];
-    });
-  });
-  saveBtn.textContent="Änderungen speichern";
-  formTitle.textContent="Turnier bearbeiten";
-  window.scrollTo({top:0,behavior:"smooth"});
-};
-
-window.del=id=>{
-  if(confirm("Turnier löschen?")) remove(ref(db,"tournaments/"+id));
-};
 
 function renderRanking(stats){
   rankingDiv.innerHTML="";
-  players
-    .map(p=>({...stats[p],p,diff:stats[p].gl-stats[p].vl}))
-    .sort((a,b)=>b.s-a.s||b.diff-a.diff)
-    .forEach((r,i)=>{
-      rankingDiv.innerHTML+=`
-      <div class="rank-row ${["gold","silver","bronze"][i]||""}">
-      ${["🥇","🥈","🥉"][i]||""} ${r.p} | S:${r.s} N:${r.n} Diff:${r.diff}
+  const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
+  sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||b.diff-a.diff);
+  sortable.forEach((r,i)=>{
+    const medal=i<3?["🥇","🥈","🥉"][i]:"";
+    rankingDiv.innerHTML+=`
+      <div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
+        <span class="medal">${medal}</span> ${r.player} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
       </div>`;
-    });
+  });
 }
 
-function renderCharts(stats){
-  avgChart?.destroy(); dqChart?.destroy(); winsChart?.destroy(); diffChart?.destroy();
+function renderCharts(stats, turnierLabels){
+  const labels = turnierLabels.map((t,i)=>i+1);
 
-  avgChart=new Chart(avgChartElem,{type:"line",
-    data:{labels:stats.Pembe.avg.map((_,i)=>i+1),
-    datasets:players.map((p,i)=>({label:p,data:stats[p].avg,borderColor:["#f59e0b","#6b7280","#b87333"][i]}))}
+  avgChart?.destroy();
+  dqChart?.destroy();
+  winsChart?.destroy();
+  diffChart?.destroy();
+
+  // AVG Chart mit Tooltip Turniernamen
+  avgChart = new Chart(document.getElementById("avgChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:players.map((p,i)=>({
+        label:p+" AVG",
+        data:stats[p].avg,
+        tension:0.3,
+        borderColor:["#f59e0b","#6b7280","#b87333"][i],
+        borderWidth:3,
+        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        pointRadius:5,
+        fill:false
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
+          }
+        }
+      },
+      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}
+    }
   });
 
-  dqChart=new Chart(dqChartElem,{type:"line",
-    data:{labels:stats.Pembe.dq.map((_,i)=>i+1),
-    datasets:players.map((p,i)=>({label:p,data:stats[p].dq,borderColor:["#f59e0b","#6b7280","#b87333"][i]}))}
+  // Doppelquote Chart
+  dqChart = new Chart(document.getElementById("dqChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:players.map((p,i)=>({
+        label:p+" DQ %",
+        data:stats[p].dq,
+        tension:0.3,
+        borderColor:["#f59e0b","#6b7280","#b87333"][i],
+        borderWidth:3,
+        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        pointRadius:5,
+        fill:false
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
+          }
+        }
+      },
+      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}
+    }
   });
 
-  winsChart=new Chart(winsChartElem,{type:"bar",
-    data:{labels:players,datasets:[{data:players.map(p=>stats[p].s),backgroundColor:["#fde68a","#e5e7eb","#a97142"]}]}
+  // Siege Chart
+  winsChart = new Chart(document.getElementById("winsChart"),{
+    type:"bar",
+    data:{
+      labels:players,
+      datasets:[{
+        label:"Siege",
+        data:players.map(p=>stats[p].s),
+        backgroundColor:["#fde68a","#e5e7eb","#a97142"],
+        borderRadius:8
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>`Siege: ${ctx.raw}`
+          }
+        },
+        legend:{display:false}
+      },
+      scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}
+    }
   });
 
-  diffChart=new Chart(diffChartElem,{type:"bar",
-    data:{labels:players,datasets:[{data:players.map(p=>stats[p].gl-stats[p].vl),backgroundColor:["#fcd34d","#d1d5db","#b87333"]}]}
+  // Differenz Chart
+  diffChart = new Chart(document.getElementById("diffChart"),{
+    type:"bar",
+    data:{
+      labels:players,
+      datasets:[{
+        label:"Differenz (GL-VL)",
+        data:players.map(p=>stats[p].gl-stats[p].vl),
+        backgroundColor:["#fcd34d","#d1d5db","#b87333"],
+        borderRadius:8
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>`Diff: ${ctx.raw}`
+          }
+        },
+        legend:{display:false}
+      },
+      scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}
+    }
   });
 }
 </script>
