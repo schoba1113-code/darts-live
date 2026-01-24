@@ -18,19 +18,30 @@
   <h2>Turnier erfassen</h2>
   <div class="form-row">
     <input id="tName" placeholder="Turniername">
-    <input id="tDate" type="date" placeholder="Datum">
+    <input id="tDate" type="date">
   </div>
   <div id="players"></div>
-  <div class="button-row">
-    <button class="primary" id="saveBtn">Turnier speichern</button>
-    <button class="secondary" id="cancelBtn" style="display:none;">Abbrechen</button>
-  </div>
+  <button class="primary" id="saveBtn">Turnier speichern</button>
+  <button class="secondary" id="cancelBtn" style="display:none;">Abbrechen</button>
 </section>
 
 <section class="card">
   <h2>Zeitraum wählen</h2>
   <select id="yearFilter" onchange="buildMonthFilter()"></select>
   <select id="monthFilter" onchange="renderAll()"></select>
+</section>
+
+<section class="card">
+  <h2>Filter & Sortierung</h2>
+  <select id="playerFilter" onchange="renderAll()">
+    <option value="all">Alle Spieler</option>
+  </select>
+  <select id="rankingSort" onchange="renderAll()">
+    <option value="s">Nach Siegen</option>
+    <option value="avg">Nach AVG</option>
+    <option value="dq">Nach Doppelquote</option>
+    <option value="diff">Nach Differenz</option>
+  </select>
 </section>
 
 <section class="card">
@@ -44,7 +55,7 @@
 </section>
 
 <section class="card">
-  <h2>AVG Statistik</h2>
+  <h2>AVG Statistik (Balken)</h2>
   <canvas id="avgBarChart"></canvas>
 </section>
 
@@ -54,7 +65,7 @@
 </section>
 
 <section class="card">
-  <h2>DQ Statistik</h2>
+  <h2>DQ Statistik (Balken)</h2>
   <canvas id="dqBarChart"></canvas>
 </section>
 
@@ -84,7 +95,7 @@ const firebaseConfig = {
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
   databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "darts-turniere-dacfc",
-  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
+  storageBucket: "darts-turniere-dacfc.firebasedestorage.app",
   messagingSenderId: "779378324704",
   appId: "1:779378324704:web:88aaf743660af6c138cc85"
 };
@@ -98,6 +109,8 @@ const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
+const playerFilter = document.getElementById("playerFilter");
+const rankingSort = document.getElementById("rankingSort");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 
@@ -117,6 +130,11 @@ players.forEach(p=>{
     <input placeholder="AVG" id="${p}-avg">
     <input placeholder="DQ %" id="${p}-dq">
   </div>`;
+  // Spielerfilter füllen
+  const opt = document.createElement("option");
+  opt.value = p;
+  opt.textContent = p;
+  playerFilter.appendChild(opt);
 });
 
 // Save/Update Button
@@ -134,7 +152,7 @@ saveBtn.addEventListener("click", () => {
     };
   });
 
-  if(editId){ // Update
+  if(editId){
     update(ref(db,"tournaments/"+editId),data);
     editId = null;
     saveBtn.textContent = "Turnier speichern";
@@ -219,10 +237,13 @@ function buildMonthFilter() {
   });
 }
 
-// Alle Turniere rendern mit Jahr + Monat
+// Alle Turniere rendern
 function renderAll(){
   const year = yearFilter.value;
   const month = monthFilter.value;
+  const selectedPlayer = playerFilter.value;
+  const sortKey = rankingSort.value;
+
   const stats = {};
   const turnierLabels = [];
   players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
@@ -243,6 +264,7 @@ function renderAll(){
 
     turnierLabels.push(t.name);
     players.forEach(p=>{
+      if(selectedPlayer !== "all" && p !== selectedPlayer) return;
       const d = t.players[p];
       stats[p].s += d.s;
       stats[p].n += d.n;
@@ -254,25 +276,32 @@ function renderAll(){
     });
   });
 
-  renderRanking(stats);
+  renderRanking(stats, sortKey);
   renderCharts(stats, turnierLabels);
 }
 
-// Rangliste rendern
-function renderRanking(stats){
-  rankingDiv.innerHTML="";
+// Rangliste rendern mit Sortierung
+function renderRanking(stats, sortKey="s"){
+  rankingDiv.innerHTML = "";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
-  sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
+  sortable.sort((a,b)=>{
+    if(sortKey==="s") return b.s-a.s || b.gl-a.gl || b.diff-a.diff;
+    if(sortKey==="avg") return (b.avg.reduce((x,y)=>x+y,0)/Math.max(b.avg.length,1)) - (a.avg.reduce((x,y)=>x+y,0)/Math.max(a.avg.length,1));
+    if(sortKey==="dq") return (b.dq.reduce((x,y)=>x+y,0)/Math.max(b.dq.length,1)) - (a.dq.reduce((x,y)=>x+y,0)/Math.max(a.dq.length,1));
+    if(sortKey==="diff") return b.diff-a.diff;
+    return 0;
+  });
+
   sortable.forEach((r,i)=>{
-    const medal=i<3?["🥇","🥈","🥉"][i]:"";
-    rankingDiv.innerHTML+=`
+    const medal = i<3?["🥇","🥈","🥉"][i]:"";
+    rankingDiv.innerHTML += `
       <div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
         <span class="medal">${medal}</span> ${r.player} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
       </div>`;
   });
 }
 
-// Charts rendern
+// Charts rendern (unverändert)
 function renderCharts(stats, turnierLabels){
   const labels = turnierLabels.map((t,i)=>i+1);
 
@@ -286,29 +315,67 @@ function renderCharts(stats, turnierLabels){
   // AVG Balken
   avgBarChart = new Chart(document.getElementById("avgBarChart"),{
     type:"bar",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,backgroundColor:["#f59e0b","#6b7280","#b87333"][i],borderRadius:5}))},
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
+    data:{
+      labels,
+      datasets: players.map((p,i)=>({
+        label:p+" AVG",
+        data: stats[p].avg,
+        backgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        borderRadius:5
+      }))
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
   });
 
   // AVG Trend Linie
   avgTrendChart = new Chart(document.getElementById("avgTrendChart"),{
     type:"line",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" AVG",data:stats[p].avg,borderColor:["#f59e0b","#6b7280","#b87333"][i],backgroundColor:["#f59e0b","#6b7280","#b87333"][i],tension:0.3,fill:false,pointRadius:5}))},
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}}
+    data:{
+      labels,
+      datasets: players.map((p,i)=>({
+        label:p+" AVG",
+        data: stats[p].avg,
+        borderColor:["#f59e0b","#6b7280","#b87333"][i],
+        backgroundColor:["#f59e0b","#6b7280","#b87333"][i],
+        tension:0.3,
+        fill:false,
+        pointRadius:5
+      }))
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'AVG'}}}}
   });
 
   // DQ Balken
   dqBarChart = new Chart(document.getElementById("dqBarChart"),{
     type:"bar",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],borderRadius:5}))},
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
+    data:{
+      labels,
+      datasets: players.map((p,i)=>({
+        label:p+" DQ %",
+        data: stats[p].dq,
+        backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],
+        borderRadius:5
+      }))
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
   });
 
   // DQ Trend Linie
   dqTrendChart = new Chart(document.getElementById("dqTrendChart"),{
     type:"line",
-    data:{labels,datasets:players.map((p,i)=>({label:p+" DQ %",data:stats[p].dq,borderColor:["#fde68a","#e5e7eb","#a97142"][i],backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],tension:0.3,fill:false,pointRadius:5}))},
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}}
+    data:{
+      labels,
+      datasets: players.map((p,i)=>({
+        label:p+" DQ %",
+        data: stats[p].dq,
+        borderColor:["#fde68a","#e5e7eb","#a97142"][i],
+        backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],
+        tension:0.3,
+        fill:false,
+        pointRadius:5
+      }))
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Spiel'}}, y:{title:{display:true,text:'DQ %'}}}}
   });
 
   // Siege
