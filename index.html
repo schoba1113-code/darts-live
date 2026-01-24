@@ -27,21 +27,9 @@
 
 <section class="card">
   <h2>Zeitraum wählen</h2>
-  <select id="yearFilter" onchange="buildMonthFilter()"></select>
-  <select id="monthFilter" onchange="renderAll()"></select>
-</section>
-
-<section class="card">
-  <h2>Filter & Sortierung</h2>
-  <select id="playerFilter" onchange="renderAll()">
-    <option value="all">Alle Spieler</option>
-  </select>
-  <select id="rankingSort" onchange="renderAll()">
-    <option value="s">Nach Siegen</option>
-    <option value="avg">Nach AVG</option>
-    <option value="dq">Nach Doppelquote</option>
-    <option value="diff">Nach Differenz</option>
-  </select>
+  <select id="yearFilter"></select>
+  <select id="monthFilter"></select>
+  <button id="applyFilterBtn" class="primary">Filter anwenden</button>
 </section>
 
 <section class="card">
@@ -95,7 +83,7 @@ const firebaseConfig = {
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
   databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "darts-turniere-dacfc",
-  storageBucket: "darts-turniere-dacfc.firebasedestorage.app",
+  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
   messagingSenderId: "779378324704",
   appId: "1:779378324704:web:88aaf743660af6c138cc85"
 };
@@ -109,10 +97,9 @@ const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
-const playerFilter = document.getElementById("playerFilter");
-const rankingSort = document.getElementById("rankingSort");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
+const applyFilterBtn = document.getElementById("applyFilterBtn");
 
 let allTournaments = {};
 let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
@@ -130,11 +117,6 @@ players.forEach(p=>{
     <input placeholder="AVG" id="${p}-avg">
     <input placeholder="DQ %" id="${p}-dq">
   </div>`;
-  // Spielerfilter füllen
-  const opt = document.createElement("option");
-  opt.value = p;
-  opt.textContent = p;
-  playerFilter.appendChild(opt);
 });
 
 // Save/Update Button
@@ -152,7 +134,7 @@ saveBtn.addEventListener("click", () => {
     };
   });
 
-  if(editId){
+  if(editId){ // Update
     update(ref(db,"tournaments/"+editId),data);
     editId = null;
     saveBtn.textContent = "Turnier speichern";
@@ -207,7 +189,7 @@ window.editTournament = function(id){
 onValue(ref(db,"tournaments"),snap=>{
   allTournaments = snap.val()||{};
   buildYearFilter();
-  renderAll();
+  // renderAll();  <-- nicht mehr automatisch
 });
 
 // Jahresfilter bauen
@@ -237,13 +219,13 @@ function buildMonthFilter() {
   });
 }
 
-// Alle Turniere rendern
+// Filter Button
+applyFilterBtn.addEventListener("click", renderAll);
+
+// Alle Turniere rendern mit Jahr + Monat
 function renderAll(){
   const year = yearFilter.value;
   const month = monthFilter.value;
-  const selectedPlayer = playerFilter.value;
-  const sortKey = rankingSort.value;
-
   const stats = {};
   const turnierLabels = [];
   players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
@@ -264,7 +246,6 @@ function renderAll(){
 
     turnierLabels.push(t.name);
     players.forEach(p=>{
-      if(selectedPlayer !== "all" && p !== selectedPlayer) return;
       const d = t.players[p];
       stats[p].s += d.s;
       stats[p].n += d.n;
@@ -276,22 +257,15 @@ function renderAll(){
     });
   });
 
-  renderRanking(stats, sortKey);
+  renderRanking(stats);
   renderCharts(stats, turnierLabels);
 }
 
-// Rangliste rendern mit Sortierung
-function renderRanking(stats, sortKey="s"){
+// Rangliste rendern
+function renderRanking(stats){
   rankingDiv.innerHTML = "";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
-  sortable.sort((a,b)=>{
-    if(sortKey==="s") return b.s-a.s || b.gl-a.gl || b.diff-a.diff;
-    if(sortKey==="avg") return (b.avg.reduce((x,y)=>x+y,0)/Math.max(b.avg.length,1)) - (a.avg.reduce((x,y)=>x+y,0)/Math.max(a.avg.length,1));
-    if(sortKey==="dq") return (b.dq.reduce((x,y)=>x+y,0)/Math.max(b.dq.length,1)) - (a.dq.reduce((x,y)=>x+y,0)/Math.max(a.dq.length,1));
-    if(sortKey==="diff") return b.diff-a.diff;
-    return 0;
-  });
-
+  sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
   sortable.forEach((r,i)=>{
     const medal = i<3?["🥇","🥈","🥉"][i]:"";
     rankingDiv.innerHTML += `
@@ -301,7 +275,7 @@ function renderRanking(stats, sortKey="s"){
   });
 }
 
-// Charts rendern (unverändert)
+// Charts rendern
 function renderCharts(stats, turnierLabels){
   const labels = turnierLabels.map((t,i)=>i+1);
 
