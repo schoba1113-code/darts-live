@@ -26,8 +26,9 @@
 </section>
 
 <section class="card">
-  <h2>Jahreswertung</h2>
-  <select id="yearFilter" onchange="renderAll()"></select>
+  <h2>Zeitraum wählen</h2>
+  <select id="yearFilter" onchange="buildMonthFilter()"></select>
+  <select id="monthFilter" onchange="renderAll()"></select>
 </section>
 
 <section class="card">
@@ -94,6 +95,7 @@ const playerDiv = document.getElementById("players");
 const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
+const monthFilter = document.getElementById("monthFilter");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 
@@ -189,25 +191,44 @@ onValue(ref(db,"tournaments"),snap=>{
 });
 
 // Jahresfilter bauen
-function buildYearFilter(){
+function buildYearFilter() {
   const years = new Set();
-  Object.values(allTournaments).forEach(t=>years.add(t.date.slice(0,4)));
-  yearFilter.innerHTML='<option value="all">Alle</option>';
-  [...years].sort().forEach(y=>{
+  Object.values(allTournaments).forEach(t => years.add(t.date.slice(0,4)));
+  yearFilter.innerHTML = '<option value="all">Alle Jahre</option>';
+  [...years].sort().forEach(y => {
     yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+  });
+  buildMonthFilter();
+}
+
+// Monatsfilter bauen
+function buildMonthFilter() {
+  const selectedYear = yearFilter.value;
+  const months = new Set();
+  Object.values(allTournaments).forEach(t => {
+    if(selectedYear === "all" || t.date.startsWith(selectedYear)) {
+      months.add(t.date.slice(5,7));
+    }
+  });
+  monthFilter.innerHTML = '<option value="all">Alle Monate</option>';
+  [...months].sort().forEach(m => {
+    const monthName = new Date(0, parseInt(m)-1).toLocaleString('de-DE', {month:'long'});
+    monthFilter.innerHTML += `<option value="${m}">${monthName}</option>`;
   });
 }
 
-// Alle Turniere rendern
+// Alle Turniere rendern mit Jahr + Monat
 function renderAll(){
   const year = yearFilter.value;
+  const month = monthFilter.value;
   const stats = {};
   const turnierLabels = [];
   players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
   tournamentList.innerHTML = "";
   Object.entries(allTournaments).forEach(([id,t])=>{
-    if(year!=="all" && !t.date.startsWith(year)) return;
+    if(year !== "all" && !t.date.startsWith(year)) return;
+    if(month !== "all" && t.date.slice(5,7) !== month) return;
 
     const div = document.createElement("div");
     div.className = "tournament";
