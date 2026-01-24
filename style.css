@@ -1,233 +1,209 @@
-/* =========================
-   RESET & BASIS
-========================= */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* Grundlayout */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  padding: 12px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9fafb;
+    color: #111827;
 }
 
 .app {
-  max-width: 480px;
-  margin: auto;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
 }
 
-/* =========================
-   HEADER
-========================= */
+/* Header */
 header {
-  text-align: center;
-  margin-bottom: 16px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
+    font-size: 2rem;
 }
 
-/* =========================
-   CARDS
-========================= */
+/* Karten */
 .card {
-  background: #020617;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-.card h2 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-
-.card h3 {
-  font-size: 1rem;
-  margin: 10px 0;
-  color: #cbd5f5;
-}
-
-/* =========================
-   FORM LAYOUT
-========================= */
+/* Turniername + Datum Einheit */
 .form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    overflow-x: auto;
 }
 
-/* =========================
-   INPUTS & SELECTS
-========================= */
-input,
-select {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 0.95rem;
-  border-radius: 10px;
-  border: none;
-  background: #020617;
-  color: #e5e7eb;
-  outline: 1px solid #334155;
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select {
+    padding: 10px 12px;
+    border: 1px solid #3b82f6;
+    border-radius: 10px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: #111827;
+    flex: 1 1 auto;
+    min-width: 120px;
+    white-space: nowrap;
 }
 
-input::placeholder {
-  color: #94a3b8;
+.form-row input[type="text"]::placeholder,
+.form-row input[type="date"]::placeholder {
+    color: #6b7280;
 }
 
-input[type="date"] {
-  color-scheme: dark;
+/* Spieler Inputs */
+input {
+    width: 60px;
+    padding: 6px;
+    margin: 0 5px 5px 0;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    text-align: center;
+    font-size: 0.9rem;
+    background-color: #ffffff;
 }
 
-select {
-  appearance: none;
-}
-
-/* =========================
-   PLAYER ROW (WICHTIG)
-========================= */
-.player-row {
-  display: grid;
-  grid-template-columns: 90px repeat(6, 1fr);
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.player-row strong {
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.player-row input {
-  padding: 8px;
-  font-size: 0.8rem;
-  text-align: center;
-}
-
-/* =========================
-   BUTTONS
-========================= */
+/* Buttons */
 button {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 16px;
+    font-size: 1rem;
+    transition: all 0.2s;
 }
 
 button.primary {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  color: #020617;
+    background-color: #2563eb;
+    color: #fff;
+    min-width: 120px;
+}
+
+button.primary:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.05);
 }
 
 button.secondary {
-  background: #334155;
-  color: #e5e7eb;
+    background-color: #9ca3af;
+    color: #fff;
+    min-width: 120px;
 }
 
-button:active {
-  transform: scale(0.97);
+button.secondary:hover {
+    background-color: #6b7280;
+    transform: scale(1.05);
 }
 
-/* =========================
-   GAME LIST
-========================= */
+#applyFilterBtn {
+    background-color: #10b981;
+    color: #fff;
+}
+
+#applyFilterBtn:hover {
+    background-color: #059669;
+}
+
+/* Spielerreihe */
+.player-row {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.player-row strong {
+    flex: 0 0 80px;
+}
+
+.player-row input {
+    flex: 0 0 50px;
+    margin-right: 5px;
+}
+
+/* Spiel-Liste */
 #gameList {
-  list-style: none;
-  margin-top: 8px;
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
 }
 
 #gameList li {
-  font-size: 0.85rem;
-  padding: 6px 0;
-  border-bottom: 1px solid #1e293b;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* =========================
-   RANGLISTE
-========================= */
+#gameList li button {
+    background-color: #ef4444;
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+#gameList li button:hover {
+    background-color: #b91c1c;
+}
+
+/* Rangliste */
 .rank-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
-.rank-row.gold {
-  background: #92400e;
-}
+.rank-row.gold { background-color: #fcd34d; }
+.rank-row.silver { background-color: #e5e7eb; }
+.rank-row.bronze { background-color: #b87333; }
 
-.rank-row.silver {
-  background: #374151;
-}
+.rank-row .medal { margin-right: 8px; font-size: 1.2rem; }
 
-.rank-row.bronze {
-  background: #78350f;
-}
-
-.rank-row .medal {
-  font-size: 1.2rem;
-}
-
-/* =========================
-   TURNIER LISTE
-========================= */
+/* Turnierliste */
 .tournament {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  background: #020617;
-  outline: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    flex-wrap: wrap;
 }
 
-.tournament span {
-  font-size: 0.9rem;
-  flex: 1;
-}
+.tournament button { margin-top: 5px; }
 
-.tournament button {
-  font-size: 0.75rem;
-  padding: 6px 8px;
-}
-
-/* =========================
-   CHARTS
-========================= */
+/* Charts */
 canvas {
-  width: 100% !important;
-  height: 220px !important;
+    width: 100% !important;
+    max-height: 300px;
+    margin-top: 15px;
 }
 
-/* =========================
-   MOBILE FEINSCHLIFF
-========================= */
-@media (max-width: 420px) {
-  .player-row {
-    grid-template-columns: 70px repeat(6, 1fr);
-  }
-
-  header h1 {
-    font-size: 1.4rem;
-  }
-
-  canvas {
-    height: 200px !important;
-  }
+/* Responsive iPhone Hochformat */
+@media (max-width: 600px) {
+    .form-row { flex-direction: column; align-items: stretch; }
+    .rank-row { flex-direction: column; align-items: flex-start; }
+    .tournament { flex-direction: column; align-items: flex-start; }
+    button { margin-bottom: 5px; }
+    .player-row input { flex: 0 0 50px; margin-right: 5px; }
 }
