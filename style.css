@@ -41,10 +41,23 @@ input {
     border: 1px solid #d1d5db;
     text-align: center;
     font-size: 0.9rem;
+    background-color: #ffffff;
 }
 
+/* Datumseingabe hervorheben */
+input[type="date"] {
+    width: 160px;
+    padding: 6px 10px;
+    border: 1px solid #3b82f6; /* deutlicher blauer Rahmen */
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #111827;
+    font-size: 0.95rem;
+}
+
+/* Placeholder-Farbe */
 input::placeholder {
-    color: #9ca3af;
+    color: #6b7280;
 }
 
 /* Buttons */
