@@ -41,9 +41,8 @@
 </section>
 
 <section class="card">
-  <h2>Statistiken</h2>
-  <canvas id="avgChart"></canvas>
-  <canvas id="dqChart"></canvas>
+  <h2>Statistiken (AVG & Doppelquote)</h2>
+  <canvas id="avgDqChart"></canvas>
   <canvas id="winsChart"></canvas>
   <canvas id="diffChart"></canvas>
 </section>
@@ -76,7 +75,7 @@ const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 
 let allTournaments = {};
-let avgChart, dqChart, winsChart, diffChart;
+let avgDqChart, winsChart, diffChart;
 let editId = null;
 
 // Spieler Inputs erzeugen
@@ -231,66 +230,50 @@ function renderRanking(stats){
 function renderCharts(stats, turnierLabels){
   const labels = turnierLabels.map((t,i)=>i+1);
 
-  avgChart?.destroy();
-  dqChart?.destroy();
+  avgDqChart?.destroy();
   winsChart?.destroy();
   diffChart?.destroy();
 
-  // AVG Chart
-  avgChart = new Chart(document.getElementById("avgChart"),{
-    type:"line",
+  // Kombinierter AVG & DQ Chart (Linie + Balken)
+  avgDqChart = new Chart(document.getElementById("avgDqChart"),{
     data:{
       labels,
-      datasets:players.map((p,i)=>({
-        label:p+" AVG",
-        data:stats[p].avg,
-        tension:0.3,
-        borderColor:["#f59e0b","#6b7280","#b87333"][i],
-        borderWidth:3,
-        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
-        pointRadius:5,
-        fill:false
-      }))
+      datasets:[
+        ...players.map((p,i)=>({
+          type:"line",
+          label:p+" AVG",
+          data:stats[p].avg,
+          borderColor:["#f59e0b","#6b7280","#b87333"][i],
+          borderWidth:3,
+          pointRadius:6,
+          tension:0.4,
+          fill:false,
+        })),
+        ...players.map((p,i)=>({
+          type:"bar",
+          label:p+" DQ %",
+          data:stats[p].dq,
+          backgroundColor:["#fde68a","#e5e7eb","#a97142"][i],
+          borderRadius:4,
+          barPercentage:0.6
+        }))
+      ]
     },
     options:{
       responsive:true,
+      interaction:{mode:'index',intersect:false},
       plugins:{
         tooltip:{
           callbacks:{
-            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
+            title: (items)=>items.map(it=>stats[players[it.datasetIndex%players.length]].turniere[it.dataIndex]).join(", ")
           }
-        }
+        },
+        legend:{position:'top'}
       },
-      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'AVG'}}}
-    }
-  });
-
-  // Doppelquote Chart
-  dqChart = new Chart(document.getElementById("dqChart"),{
-    type:"line",
-    data:{
-      labels,
-      datasets:players.map((p,i)=>({
-        label:p+" DQ %",
-        data:stats[p].dq,
-        tension:0.3,
-        borderColor:["#f59e0b","#6b7280","#b87333"][i],
-        borderWidth:3,
-        pointBackgroundColor:["#f59e0b","#6b7280","#b87333"][i],
-        pointRadius:5,
-        fill:false
-      }))
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        tooltip:{
-          callbacks:{
-            title: (items)=>items.map(it=>stats[players[it.datasetIndex]].turniere[it.dataIndex]).join(", ")
-          }
-        }
-      },
-      scales:{x:{title:{display:true,text:'Spiel'}},y:{title:{display:true,text:'DQ %'}}}
+      scales:{
+        x:{stacked:false,title:{display:true,text:'Spiel'}},
+        y:{stacked:false,title:{display:true,text:'Wert'}}
+      }
     }
   });
 
@@ -309,9 +292,7 @@ function renderCharts(stats, turnierLabels){
     options:{
       responsive:true,
       plugins:{
-        tooltip:{
-          callbacks:{ label:(ctx)=>`Siege: ${ctx.raw}` }
-        },
+        tooltip:{callbacks:{ label:(ctx)=>`Siege: ${ctx.raw}` }},
         legend:{display:false}
       },
       scales:{y:{beginAtZero:true,title:{display:true,text:'Siege'}}}
@@ -333,9 +314,7 @@ function renderCharts(stats, turnierLabels){
     options:{
       responsive:true,
       plugins:{
-        tooltip:{
-          callbacks:{ label:(ctx)=>`Diff: ${ctx.raw}` }
-        },
+        tooltip:{callbacks:{ label:(ctx)=>`Diff: ${ctx.raw}` }},
         legend:{display:false}
       },
       scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}
