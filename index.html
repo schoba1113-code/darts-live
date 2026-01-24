@@ -29,7 +29,7 @@
   <h2>Zeitraum wählen</h2>
   <select id="yearFilter"></select>
   <select id="monthFilter"></select>
-  <button id="applyFilterBtn" class="primary">Filter anwenden</button>
+  <button id="applyFilterBtn">Anwenden</button>
 </section>
 
 <section class="card">
@@ -83,7 +83,7 @@ const firebaseConfig = {
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
   databaseURL: "https://darts-turniere-dacfc-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "darts-turniere-dacfc",
-  storageBucket: "darts-turniere-dacfc.appspot.com",
+  storageBucket: "darts-turniere-dacfc.firebasestorage.app",
   messagingSenderId: "779378324704",
   appId: "1:779378324704:web:88aaf743660af6c138cc85"
 };
@@ -120,7 +120,11 @@ players.forEach(p=>{
 });
 
 // Save/Update Button
-saveBtn.addEventListener("click", () => {
+saveBtn.addEventListener("click", saveTournament);
+cancelBtn.addEventListener("click", cancelEdit);
+applyFilterBtn.addEventListener("click", renderAll);
+
+function saveTournament() {
   if(!tName.value || !tDate.value){ alert("Name & Datum fehlen"); return;}
   const data = {name: tName.value, date: tDate.value, players:{}};
   players.forEach(p=>{
@@ -134,7 +138,7 @@ saveBtn.addEventListener("click", () => {
     };
   });
 
-  if(editId){ // Update
+  if(editId){
     update(ref(db,"tournaments/"+editId),data);
     editId = null;
     saveBtn.textContent = "Turnier speichern";
@@ -144,15 +148,14 @@ saveBtn.addEventListener("click", () => {
   }
 
   document.querySelectorAll("input").forEach(i=>i.value="");
-});
+}
 
-// Abbrechen Button
-cancelBtn.addEventListener("click", () => {
+function cancelEdit() {
   editId = null;
   saveBtn.textContent = "Turnier speichern";
   cancelBtn.style.display = "none";
   document.querySelectorAll("input").forEach(i=>i.value="");
-});
+}
 
 // Turnier löschen
 window.deleteTournament = function(id){
@@ -189,7 +192,7 @@ window.editTournament = function(id){
 onValue(ref(db,"tournaments"),snap=>{
   allTournaments = snap.val()||{};
   buildYearFilter();
-  renderAll(); // <-- automatisch alles anzeigen, wenn kein Filter gesetzt
+  renderAll();
 });
 
 // Jahresfilter bauen
@@ -218,9 +221,6 @@ function buildMonthFilter() {
     monthFilter.innerHTML += `<option value="${m}">${monthName}</option>`;
   });
 }
-
-// Filter Button
-applyFilterBtn.addEventListener("click", renderAll);
 
 // Alle Turniere rendern mit Jahr + Monat
 function renderAll(){
@@ -261,16 +261,29 @@ function renderAll(){
   renderCharts(stats, turnierLabels);
 }
 
-// Rangliste rendern
+// Rangliste rendern mit Achievements
 function renderRanking(stats){
-  rankingDiv.innerHTML = "";
+  rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
   sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
+
+  // Achievements berechnen
+  const highestAVG = Math.max(...players.map(p => stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
+  const bestDQ = Math.max(...players.map(p => stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
+  const mostWins = Math.max(...players.map(p => stats[p].s));
+
   sortable.forEach((r,i)=>{
     const medal = i<3?["🥇","🥈","🥉"][i]:"";
+    const badges = [];
+    const avgMean = r.avg.reduce((sum,v)=>sum+v,0)/Math.max(r.avg.length,1);
+    const dqMean = r.dq.reduce((sum,v)=>sum+v,0)/Math.max(r.dq.length,1);
+    if(avgMean === highestAVG) badges.push("🌟");
+    if(dqMean === bestDQ) badges.push("⚡");
+    if(r.s === mostWins) badges.push("🏆");
+
     rankingDiv.innerHTML += `
       <div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
-        <span class="medal">${medal}</span> ${r.player} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
+        <span class="medal">${medal}</span> ${r.player} ${badges.join('')} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
       </div>`;
   });
 }
