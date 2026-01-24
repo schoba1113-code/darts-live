@@ -1,3 +1,5 @@
+let editId = null;
+
 const players = ["Pembe", "Marki", "Schoba"];
 let tournaments = JSON.parse(localStorage.getItem("tournaments")) || [];
 
@@ -152,3 +154,4 @@ function deleteTournament(index) {
 
 // Direkt beim Laden
 buildRanking();
+
