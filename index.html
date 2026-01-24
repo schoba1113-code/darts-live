@@ -33,6 +33,11 @@
 
   <div id="gameForm"></div>
 
+  <div class="card" id="liveStatsCard">
+    <h3>Live-Statistik</h3>
+    <div id="liveStats"></div>
+  </div>
+
   <button class="primary" id="saveBtn">Turnier speichern</button>
   <button class="secondary" id="cancelBtn" style="display:none;">Abbrechen</button>
 </section>
@@ -107,6 +112,7 @@ const players = ["Pembe","Marki","Schoba"];
 const player1Select = document.getElementById("player1");
 const player2Select = document.getElementById("player2");
 const gameForm = document.getElementById("gameForm");
+const liveStatsDiv = document.getElementById("liveStats");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 const tName = document.getElementById("tName");
@@ -134,40 +140,81 @@ document.getElementById("addGameBtn").addEventListener("click", () => {
   const p2 = player2Select.value;
   if(!p1 || !p2 || p1===p2){ alert("Bitte zwei verschiedene Spieler wählen"); return; }
 
-  const gameData = {
-    player1: p1,
-    player2: p2,
-    s1: +prompt(`${p1} S`,"0"),
-    n1: +prompt(`${p1} N`,"0"),
-    gl1: +prompt(`${p1} GL`,"0"),
-    vl1: +prompt(`${p1} VL`,"0"),
-    avg1: +prompt(`${p1} AVG`,"0"),
-    dq1: +prompt(`${p1} DQ %`,"0"),
-    s2: +prompt(`${p2} S`,"0"),
-    n2: +prompt(`${p2} N`,"0"),
-    gl2: +prompt(`${p2} GL`,"0"),
-    vl2: +prompt(`${p2} VL`,"0"),
-    avg2: +prompt(`${p2} AVG`,"0"),
-    dq2: +prompt(`${p2} DQ %`,"0")
+  const newGame = {
+    player1: p1, s1:0, n1:0, gl1:0, vl1:0, avg1:0, dq1:0,
+    player2: p2, s2:0, n2:0, gl2:0, vl2:0, avg2:0, dq2:0
   };
 
-  games.push(gameData);
+  games.push(newGame);
   renderGames();
+  updateLiveStats();
 });
 
-// Spiele in Übersicht rendern
+// Spiele rendern mit Eingabefeldern
 function renderGames(){
   gameForm.innerHTML = "";
   games.forEach((g,i)=>{
     const div = document.createElement("div");
-    div.className = "player-row";
-    div.innerHTML = `
+    div.className="player-row";
+    div.innerHTML=`
       <strong>${g.player1} vs ${g.player2}</strong>
-      <span> S:${g.s1} N:${g.n1} GL:${g.gl1} VL:${g.vl1} AVG:${g.avg1} DQ:${g.dq1}% | 
-      S:${g.s2} N:${g.n2} GL:${g.gl2} VL:${g.vl2} AVG:${g.avg2} DQ:${g.dq2}%</span>
-      <button onclick="deleteGame(${i})">Löschen</button>
+      <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+        <input type="number" placeholder="S ${g.player1}" value="${g.s1}" min="0" id="s1-${i}">
+        <input type="number" placeholder="N ${g.player1}" value="${g.n1}" min="0" id="n1-${i}">
+        <input type="number" placeholder="GL ${g.player1}" value="${g.gl1}" min="0" id="gl1-${i}">
+        <input type="number" placeholder="VL ${g.player1}" value="${g.vl1}" min="0" id="vl1-${i}">
+        <input type="number" placeholder="AVG ${g.player1}" value="${g.avg1}" min="0" step="0.1" id="avg1-${i}">
+        <input type="number" placeholder="DQ ${g.player1}" value="${g.dq1}" min="0" max="100" step="0.1" id="dq1-${i}">
+
+        <input type="number" placeholder="S ${g.player2}" value="${g.s2}" min="0" id="s2-${i}">
+        <input type="number" placeholder="N ${g.player2}" value="${g.n2}" min="0" id="n2-${i}">
+        <input type="number" placeholder="GL ${g.player2}" value="${g.gl2}" min="0" id="gl2-${i}">
+        <input type="number" placeholder="VL ${g.player2}" value="${g.vl2}" min="0" id="vl2-${i}">
+        <input type="number" placeholder="AVG ${g.player2}" value="${g.avg2}" min="0" step="0.1" id="avg2-${i}">
+        <input type="number" placeholder="DQ ${g.player2}" value="${g.dq2}" min="0" max="100" step="0.1" id="dq2-${i}">
+      </div>
+      <button onclick="deleteGame(${i})" style="margin-top:5px;">Spiel löschen</button>
     `;
     gameForm.appendChild(div);
+
+    // Werte live speichern
+    ["s1","n1","gl1","vl1","avg1","dq1","s2","n2","gl2","vl2","avg2","dq2"].forEach(key=>{
+      document.getElementById(`${key}-${i}`).addEventListener("input", e=>{
+        g[key] = parseFloat(e.target.value) || 0;
+        updateLiveStats();
+      });
+    });
+  });
+}
+
+// Live-Statistik aktualisieren
+function updateLiveStats(){
+  const stats = {};
+  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:0,dq:0,count:0});
+  games.forEach(g=>{
+    // Spieler1
+    stats[g.player1].s+=g.s1;
+    stats[g.player1].n+=g.n1;
+    stats[g.player1].gl+=g.gl1;
+    stats[g.player1].vl+=g.vl1;
+    stats[g.player1].avg+=g.avg1;
+    stats[g.player1].dq+=g.dq1;
+    stats[g.player1].count++;
+
+    // Spieler2
+    stats[g.player2].s+=g.s2;
+    stats[g.player2].n+=g.n2;
+    stats[g.player2].gl+=g.gl2;
+    stats[g.player2].vl+=g.vl2;
+    stats[g.player2].avg+=g.avg2;
+    stats[g.player2].dq+=g.dq2;
+    stats[g.player2].count++;
+  });
+
+  liveStatsDiv.innerHTML="";
+  players.forEach(p=>{
+    const c = stats[p].count || 1;
+    liveStatsDiv.innerHTML+=`<div><strong>${p}</strong> | S:${stats[p].s} N:${stats[p].n} GL:${stats[p].gl} VL:${stats[p].vl} AVG:${(stats[p].avg/c).toFixed(1)} DQ:${(stats[p].dq/c).toFixed(1)}</div>`;
   });
 }
 
@@ -175,6 +222,7 @@ function renderGames(){
 window.deleteGame = function(index){
   games.splice(index,1);
   renderGames();
+  updateLiveStats();
 }
 
 // Turnier speichern
@@ -184,7 +232,6 @@ saveBtn.addEventListener("click", () => {
 
   let data = {name:tName.value,date:tDate.value,players:{}, games:[]};
 
-  // Spiele ins Turnier übertragen
   if(editId){
     const existingGames = allTournaments[editId]?.games || [];
     data.games = [...existingGames, ...games];
@@ -192,14 +239,14 @@ saveBtn.addEventListener("click", () => {
     data.games = [...games];
   }
 
-  // Statistiken pro Spieler berechnen
+  // Statistik pro Spieler berechnen
   players.forEach(p=>{
     let s=0,n=0,gl=0,vl=0,avgArr=[],dqArr=[];
     data.games.forEach(g=>{
       if(g.player1===p){
-        s+=g.s1; n+=g.n1; gl+=g.gl1; vl+=g.vl1; avgArr.push(g.avg1); dqArr.push(g.dq1);
+        s+=g.s1;n+=g.n1;gl+=g.gl1;vl+=g.vl1;avgArr.push(g.avg1);dqArr.push(g.dq1);
       } else if(g.player2===p){
-        s+=g.s2; n+=g.n2; gl+=g.gl2; vl+=g.vl2; avgArr.push(g.avg2); dqArr.push(g.dq2);
+        s+=g.s2;n+=g.n2;gl+=g.gl2;vl+=g.vl2;avgArr.push(g.avg2);dqArr.push(g.dq2);
       }
     });
     data.players[p]={s,n,gl,vl,avg:avgArr.reduce((a,b)=>a+b,0)/Math.max(avgArr.length,1),dq:dqArr.reduce((a,b)=>a+b,0)/Math.max(dqArr.length,1)};
@@ -207,26 +254,28 @@ saveBtn.addEventListener("click", () => {
 
   if(editId){
     update(ref(db,"tournaments/"+editId),data);
-    editId = null;
-    saveBtn.textContent = "Turnier speichern";
-    cancelBtn.style.display = "none";
+    editId=null;
+    saveBtn.textContent="Turnier speichern";
+    cancelBtn.style.display="none";
   } else {
     push(ref(db,"tournaments"),data);
   }
 
   games=[];
   renderGames();
+  updateLiveStats();
   tName.value="";
   tDate.value="";
-});
+}
 
-// Edit Cancel
+// Cancel Edit
 cancelBtn.addEventListener("click", ()=>{
   editId=null;
   saveBtn.textContent="Turnier speichern";
   cancelBtn.style.display="none";
   games=[];
   renderGames();
+  updateLiveStats();
 });
 
 // Turnier löschen
@@ -242,13 +291,14 @@ window.editTournament = function(id){
     const t = snap.val();
     if(!t) return;
 
-    tName.value = t.name;
-    tDate.value = t.date;
-    games = [...t.games]; // bereits gespeicherte Spiele laden
+    tName.value=t.name;
+    tDate.value=t.date;
+    games=[...t.games];
     renderGames();
+    updateLiveStats();
 
-    editId = id;
-    saveBtn.textContent = "Update";
+    editId=id;
+    saveBtn.textContent="Update";
     cancelBtn.style.display="inline-block";
   },{onlyOnce:true});
 };
@@ -260,16 +310,16 @@ onValue(ref(db,"tournaments"),snap=>{
   renderAll();
 });
 
-// Jahresfilter bauen
+// Jahresfilter
 function buildYearFilter(){
-  const years = new Set();
+  const years=new Set();
   Object.values(allTournaments).forEach(t=>years.add(t.date.slice(0,4)));
   yearFilter.innerHTML='<option value="all">Alle Jahre</option>';
   [...years].sort().forEach(y=>yearFilter.innerHTML+=`<option value="${y}">${y}</option>`);
   buildMonthFilter();
 }
 
-// Monatsfilter bauen
+// Monatsfilter
 function buildMonthFilter(){
   const selectedYear = yearFilter.value;
   const months = new Set();
