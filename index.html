@@ -32,7 +32,7 @@
       </select>
     </div>
     <div class="player-row" id="gameStats">
-      <strong>Spieler 1</strong>
+<strong id="p1-label">Spieler 1</strong>
       <input placeholder="S" id="p1-s">
       <input placeholder="N" id="p1-n">
       <input placeholder="GL" id="p1-gl">
@@ -41,7 +41,7 @@
       <input placeholder="DQ %" id="p1-dq">
     </div>
     <div class="player-row" id="gameStats2">
-      <strong>Spieler 2</strong>
+     <strong id="p2-label">Spieler 2</strong>
       <input placeholder="S" id="p2-s">
       <input placeholder="N" id="p2-n">
       <input placeholder="GL" id="p2-gl">
@@ -139,6 +139,10 @@ const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
+  
+const p1Label = document.getElementById("p1-label");
+const p2Label = document.getElementById("p2-label");
+
 
 let allTournaments = {};
 let games = [];
@@ -489,6 +493,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
