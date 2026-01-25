@@ -322,13 +322,20 @@ function renderAll(){
     if(month !== "all" && t.date.slice(5,7) !== month) return;
 
     const div = document.createElement("div");
-    div.className = "tournament";
-    div.innerHTML = `
-      <span>${t.name} (${t.date})</span>
-      <button onclick="editTournament('${id}')">Bearbeiten</button>
-      <button onclick="deleteTournament('${id}')">Löschen</button>
-    `;
-    tournamentList.appendChild(div);
+div.className = "tournament";
+
+div.innerHTML = `
+  <div class="tournament-header" onclick="toggleTournament('${id}')">
+    <strong>${t.name}</strong> (${t.date})
+  </div>
+
+  <div class="tournament-body" id="t-body-${id}" style="display:none;">
+    <button onclick="editTournament('${id}')">Bearbeiten</button>
+    <button onclick="deleteTournament('${id}')">Löschen</button>
+  </div>
+`;
+
+tournamentList.appendChild(div);;
 
     turnierLabels.push(t.name);
     players.forEach(p=>{
@@ -346,7 +353,15 @@ function renderAll(){
   renderRanking(stats);
   renderCharts(stats, turnierLabels);
 }
+window.toggleTournament = function(id){
+  const body = document.getElementById("t-body-" + id);
+  if(!body) return;
 
+  body.style.display = body.style.display === "none"
+    ? "block"
+    : "none";
+};
+  
 // Rangliste
 function renderRanking(stats){
   rankingDiv.innerHTML="";
@@ -461,3 +476,4 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
