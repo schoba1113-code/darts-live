@@ -230,6 +230,41 @@ function renderGameList(){
   });
 }
 
+// Spiel bearbeiten
+window.editGame = function(idx){
+  const game = games[idx];
+  const playersInGame = Object.keys(game);
+
+  // Inputs mit den Werten füllen
+  ["p1","p2"].forEach((p,i)=>{
+    const player = playersInGame[i];
+    document.getElementById(`${p}-s`).value = game[player].s;
+    document.getElementById(`${p}-n`).value = game[player].n;
+    document.getElementById(`${p}-gl`).value = game[player].gl;
+    document.getElementById(`${p}-vl`).value = game[player].vl;
+    document.getElementById(`${p}-avg`).value = game[player].avg;
+    document.getElementById(`${p}-dq`).value = game[player].dq;
+  });
+
+  // Spieler-Labels & Selects anpassen
+  p1Label.textContent = playersInGame[0];
+  p2Label.textContent = playersInGame[1];
+  player1Select.value = playersInGame[0];
+  player2Select.value = playersInGame[1];
+
+  // Spiel temporär entfernen, bis es wieder gespeichert wird
+  games.splice(idx,1);
+  renderGameList();
+}
+
+// Spiel löschen
+window.deleteGame = function(idx){
+  if(confirm("Dieses Spiel wirklich löschen?")){
+    games.splice(idx,1);
+    renderGameList();
+  }
+}
+  
 // Turnier speichern
 function saveTournament(){
   if(!document.getElementById("tName").value || !document.getElementById("tDate").value){ alert("Name & Datum fehlen"); return;}
@@ -556,6 +591,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
