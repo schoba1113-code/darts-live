@@ -131,6 +131,9 @@ const db = getDatabase(app);
 const players = ["Pembe","Marki","Schoba"];
 const player1Select = document.getElementById("player1");
 const player2Select = document.getElementById("player2");
+const p1Label = document.getElementById("p1-label");
+const p2Label = document.getElementById("p2-label");
+  
 const gameList = document.getElementById("gameList");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
@@ -162,6 +165,14 @@ saveBtn.addEventListener("click", saveTournament);
 cancelBtn.addEventListener("click", cancelEdit);
 applyFilterBtn.addEventListener("click", renderAll);
 
+player1Select.addEventListener("change", () => {
+  p1Label.textContent = player1Select.value || "Spieler 1";
+});
+
+player2Select.addEventListener("change", () => {
+  p2Label.textContent = player2Select.value || "Spieler 2";
+});
+  
 // Spiel hinzufügen
 function addGame(){
   const p1 = player1Select.value;
@@ -199,6 +210,10 @@ function addGame(){
     ["s","n","gl","vl","avg","dq"].forEach(f=>document.getElementById(`${p}-${f}`).value="");
   });
 }
+p1Label.textContent = "Spieler 1";
+p2Label.textContent = "Spieler 2";
+player1Select.value = "";
+player2Select.value = "";
 
 // Turnier speichern
 function saveTournament(){
@@ -493,6 +508,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
