@@ -200,10 +200,8 @@ function addGame(){
 
   games.push(gameData);
 
-  // Liste aktualisieren
-  const li = document.createElement("li");
-  li.textContent = `${p1} vs ${p2} hinzugefügt`;
-  gameList.appendChild(li);
+   // Liste aktualisieren
+  renderGameList(); // <--- hier aufrufen
 
   // Inputs zurücksetzen
   ["p1","p2"].forEach(p=>{
@@ -213,6 +211,23 @@ function addGame(){
 p2Label.textContent = "Spieler 2";
 player1Select.value = "";
 player2Select.value = "";
+}
+function renderGameList(){
+  gameList.innerHTML = "";
+  games.forEach((g, idx) => {
+    const playersInGame = Object.keys(g);
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${playersInGame[0]} vs ${playersInGame[1]} | 
+      S: ${g[playersInGame[0]].s}-${g[playersInGame[1]].s}, 
+      N: ${g[playersInGame[0]].n}-${g[playersInGame[1]].n}, 
+      GL: ${g[playersInGame[0]].gl}-${g[playersInGame[1]].gl}, 
+      VL: ${g[playersInGame[0]].vl}-${g[playersInGame[1]].vl}
+      <button onclick="editGame(${idx})">Bearbeiten</button>
+      <button onclick="deleteGame(${idx})">Löschen</button>
+    `;
+    gameList.appendChild(li);
+  });
 }
 
 // Turnier speichern
@@ -284,17 +299,50 @@ window.deleteTournament = function(id){
   remove(ref(db,"tournaments/"+id));
 };
 
-// Bearbeiten-Funktion
+// Bearbeiten-Funktion – NEU
 window.editTournament = function(id){
   const tRef = ref(db,"tournaments/"+id);
   onValue(tRef, snap => {
     const t = snap.val();
     if(!t) return;
 
+    // Name & Datum setzen
     document.getElementById("tName").value = t.name;
     document.getElementById("tDate").value = t.date;
 
-    // Spiele werden wieder in den Input geladen, falls nötig
+    // games[] mit den gespeicherten Spielen befüllen
+    games = []; // leeren vorher
+    Object.keys(t.players).forEach(p => {
+      // Firebase speichert pro Spieler nur ein Objekt mit stats
+      // Wir müssen daraus einzelne Spiele bauen, falls mehrere vorhanden
+      // Hier: wir nehmen einfach alle bisherigen Spiele, falls t.players[p].games existiert
+      // Für dein bisheriges Setup: wir bauen einfach ein "einzelnes Spiel pro Turnier", wie es beim alten Code war
+    });
+
+    // Falls dein Turnier mehrere Spiele enthält:
+    // Firebase müsste games pro Turnier als Array gespeichert haben, dann:
+    if(t.games){ 
+      games = t.games; // Array direkt übernehmen
+    } else {
+      // Falls noch kein games Array existiert (alte Turniere), ein Spiel aus den Spieler-Daten bauen:
+      const gameData = {};
+      Object.keys(t.players).forEach(player => {
+        gameData[player] = {
+          s: t.players[player].s || 0,
+          n: t.players[player].n || 0,
+          gl: t.players[player].gl || 0,
+          vl: t.players[player].vl || 0,
+          avg: t.players[player].avg || 0,
+          dq: t.players[player].dq || 0
+        };
+      });
+      games.push(gameData);
+    }
+
+    // Spiele in der Liste anzeigen
+    renderGameList();
+
+    // Edit-Zustand setzen
     editId = id;
     saveBtn.textContent = "Update";
     cancelBtn.style.display = "inline-block";
@@ -508,6 +556,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
