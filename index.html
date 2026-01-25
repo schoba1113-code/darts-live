@@ -427,8 +427,10 @@ window.editTournament = function(id){
 // Firebase Listener
 onValue(ref(db,"tournaments"),snap=>{
   allTournaments = snap.val()||{};
-  buildYearFilter();
-  renderAll();
+  buildYearFilter();   // befüllt Jahr- & Monatsfilter
+  buildWeekFilter();   // befüllt Wochenfilter
+  buildDayFilter();    // setzt Tagesfilter (max = heute)
+  renderAll();         // zeigt die Turniere
 });
 
 // Filter Funktionen
@@ -455,6 +457,27 @@ function buildMonthFilter() {
   });
 }
 
+function buildWeekFilter(){
+  const weeks = new Set();
+  Object.values(allTournaments).forEach(t => {
+    const d = new Date(t.date);
+    const oneJan = new Date(d.getFullYear(),0,1);
+    const week = Math.ceil((((d - oneJan) / 86400000) + oneJan.getDay()+1)/7);
+    weeks.add(week);
+  });
+  weekFilter.innerHTML = '<option value="all">Alle Wochen</option>';
+  [...weeks].sort((a,b)=>a-b).forEach(w=>{
+    weekFilter.innerHTML += `<option value="${w}">${w}</option>`;
+  });
+}
+
+function buildDayFilter(){
+  // Das Inputfeld <input type="date"> braucht keine Optionen
+  // wir setzen nur den Maximalwert auf heute, optional
+  const today = new Date().toISOString().split("T")[0];
+  dayFilter.max = today;
+}
+  
 // Rangliste & Charts (1:1 aus altem Code)
 function renderAll(){
   const year = yearFilter.value;
@@ -631,6 +654,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
