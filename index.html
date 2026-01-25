@@ -267,54 +267,73 @@ window.deleteGame = function(idx){
   
 // Turnier speichern
 function saveTournament(){
-  if(!document.getElementById("tName").value || !document.getElementById("tDate").value){ alert("Name & Datum fehlen"); return;}
-  if(games.length===0){ alert("Bitte mindestens ein Spiel hinzufügen"); return;}
+  if(!document.getElementById("tName").value || !document.getElementById("tDate").value){ 
+    alert("Name & Datum fehlen"); 
+    return;
+  }
+  if(games.length===0){ 
+    alert("Bitte mindestens ein Spiel hinzufügen"); 
+    return;
+  }
 
-  const stats = {};
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[]});
+  const tName = document.getElementById("tName").value;
+  const tDate = document.getElementById("tDate").value;
 
+  // Turnier-Daten bauen
+  const finalData = {
+    name: tName,
+    date: tDate,
+    players: {}, // für Übersicht
+    games: [...games] // Array aller Spiele speichern
+  };
+
+  // Spieler-Übersicht für Rangliste berechnen
+  players.forEach(p=>{
+    finalData.players[p] = {
+      s: 0, n: 0, gl: 0, vl: 0, avg: 0, dq: 0
+    };
+  });
+
+  // Stats zusammenrechnen
   games.forEach(g=>{
     players.forEach(p=>{
       if(g[p]){
-        stats[p].s += g[p].s;
-        stats[p].n += g[p].n;
-        stats[p].gl += g[p].gl;
-        stats[p].vl += g[p].vl;
-        stats[p].avg.push(g[p].avg);
-        stats[p].dq.push(g[p].dq);
+        finalData.players[p].s += g[p].s;
+        finalData.players[p].n += g[p].n;
+        finalData.players[p].gl += g[p].gl;
+        finalData.players[p].vl += g[p].vl;
+        finalData.players[p].avg += g[p].avg;
+        finalData.players[p].dq += g[p].dq;
       }
     });
   });
 
-  const finalData = {name: document.getElementById("tName").value,
-                     date: document.getElementById("tDate").value,
-                     players:{}};
-
+  // Durchschnitt berechnen
   players.forEach(p=>{
-    finalData.players[p] = {
-      s: stats[p].s,
-      n: stats[p].n,
-      gl: stats[p].gl,
-      vl: stats[p].vl,
-      avg: stats[p].avg.reduce((a,b)=>a+b,0)/stats[p].avg.length,
-      dq: stats[p].dq.reduce((a,b)=>a+b,0)/stats[p].dq.length
-    };
+    const gameCount = games.filter(g => g[p]).length || 1;
+    finalData.players[p].avg = finalData.players[p].avg / gameCount;
+    finalData.players[p].dq = finalData.players[p].dq / gameCount;
   });
 
+  // In Firebase speichern
   if(editId){
-    update(ref(db,"tournaments/"+editId),finalData);
-    editId=null;
-    saveBtn.textContent="Turnier speichern";
-    cancelBtn.style.display="none";
+    update(ref(db,"tournaments/"+editId), finalData);
+    editId = null;
+    saveBtn.textContent = "Turnier speichern";
+    cancelBtn.style.display = "none";
   } else {
-    push(ref(db,"tournaments"),finalData);
+    push(ref(db,"tournaments"), finalData);
   }
 
-  // Reset
-  games=[];
-  gameList.innerHTML="";
-  document.getElementById("tName").value="";
-  document.getElementById("tDate").value="";
+  // Inputs zurücksetzen
+  games = [];
+  gameList.innerHTML = "";
+  document.getElementById("tName").value = "";
+  document.getElementById("tDate").value = "";
+  p1Label.textContent = "Spieler 1";
+  p2Label.textContent = "Spieler 2";
+  player1Select.value = "";
+  player2Select.value = "";
 }
 
 // Cancel Edit
@@ -591,6 +610,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
