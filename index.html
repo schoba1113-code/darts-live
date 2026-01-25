@@ -366,6 +366,14 @@ window.toggleTournament = function(id){
     ? "block"
     : "none";
 };
+window.toggleTournamentList = function(){
+  const wrapper = document.getElementById("tournamentListWrapper");
+  if(!wrapper) return;
+
+  wrapper.style.display = wrapper.style.display === "none"
+    ? "block"
+    : "none";
+};
   
 // Rangliste
 function renderRanking(stats){
@@ -481,5 +489,6 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
