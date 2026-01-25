@@ -487,25 +487,43 @@ function renderAll(){
   players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
   tournamentList.innerHTML = "";
-  Object.entries(allTournaments).forEach(([id,t])=>{
-    if(year !== "all" && !t.date.startsWith(year)) return;
-    if(month !== "all" && t.date.slice(5,7) !== month) return;
+ Object.entries(allTournaments).forEach(([id,t])=>{
+  // Jahr
+  if(year !== "all" && !t.date.startsWith(year)) return;
 
-    const div = document.createElement("div");
-div.className = "tournament";
+  // Monat
+  if(month !== "all" && t.date.slice(5,7) !== month) return;
 
-div.innerHTML = `
-  <div class="tournament-header" onclick="toggleTournament('${id}')">
-    <strong>${t.name}</strong> (${t.date})
-  </div>
+  // Woche
+  const selectedWeek = weekFilter.value;
+  if(selectedWeek !== "all") {
+    const d = new Date(t.date);
+    const oneJan = new Date(d.getFullYear(),0,1);
+    const week = Math.ceil((((d - oneJan) / 86400000) + oneJan.getDay()+1)/7);
+    if(week != selectedWeek) return;
+  }
 
-  <div class="tournament-body" id="t-body-${id}" style="display:none;">
-    <button onclick="editTournament('${id}')">Bearbeiten</button>
-    <button onclick="deleteTournament('${id}')">Löschen</button>
-  </div>
-`;
+  // Tag
+  const selectedDay = dayFilter.value; // yyyy-mm-dd
+  if(selectedDay !== "" && t.date !== selectedDay) return;
 
-tournamentList.appendChild(div);;
+  const div = document.createElement("div");
+  div.className = "tournament";
+
+  div.innerHTML = `
+    <div class="tournament-header" onclick="toggleTournament('${id}')">
+      <strong>${t.name}</strong> (${t.date})
+    </div>
+
+    <div class="tournament-body" id="t-body-${id}" style="display:none;">
+      <button onclick="editTournament('${id}')">Bearbeiten</button>
+      <button onclick="deleteTournament('${id}')">Löschen</button>
+    </div>
+  `;
+
+  tournamentList.appendChild(div);
+  
+});
 
     turnierLabels.push(t.name);
     players.forEach(p=>{
@@ -654,6 +672,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
