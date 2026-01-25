@@ -59,8 +59,21 @@
 
 <section class="card">
   <h2>Zeitraum wählen</h2>
+
+  <label for="yearFilter">Jahr:</label>
   <select id="yearFilter"></select>
+
+  <label for="monthFilter">Monat:</label>
   <select id="monthFilter"></select>
+
+  <label for="weekFilter">Woche:</label>
+  <select id="weekFilter">
+    <option value="all">Alle Wochen</option>
+  </select>
+
+  <label for="dayFilter">Tag:</label>
+  <input type="date" id="dayFilter">
+
   <button id="applyFilterBtn">Anwenden</button>
 </section>
 
@@ -618,6 +631,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
