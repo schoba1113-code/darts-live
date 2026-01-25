@@ -308,13 +308,21 @@ function saveTournament(){
     });
   });
 
-  // Durchschnitt berechnen
-  players.forEach(p=>{
-    const gameCount = games.filter(g => g[p]).length || 1;
-    finalData.players[p].avg = finalData.players[p].avg / gameCount;
-    finalData.players[p].dq = finalData.players[p].dq / gameCount;
-  });
+ players.forEach(p => {
+  // AVG bleibt wie bisher
+  const gameCount = games.filter(g => g[p]).length || 1;
+  finalData.players[p].avg = finalData.players[p].avg / gameCount;
 
+  // DQ: nur Spiele berücksichtigen, die dq != null sind
+  const dqValues = games
+    .filter(g => g[p] && g[p].dq !== null)  // null = keine Chance auf Doppel
+    .map(g => g[p].dq);                     // 0 wird normal eingerechnet
+
+  finalData.players[p].dq = dqValues.length 
+    ? dqValues.reduce((a,b)=>a+b,0) / dqValues.length 
+    : 0;
+});
+  
   // In Firebase speichern
   if(editId){
     update(ref(db,"tournaments/"+editId), finalData);
@@ -610,6 +618,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
