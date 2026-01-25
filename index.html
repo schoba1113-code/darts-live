@@ -482,54 +482,54 @@ function buildDayFilter(){
 function renderAll(){
   const year = yearFilter.value;
   const month = monthFilter.value;
+  const week = weekFilter.value;
+  const day = dayFilter.value;
+
   const stats = {};
   const turnierLabels = [];
-  players.forEach(p=>stats[p]={s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
+  players.forEach(p => stats[p] = {s:0,n:0,gl:0,vl:0,avg:[],dq:[],turniere:[]});
 
   tournamentList.innerHTML = "";
- Object.entries(allTournaments).forEach(([id,t])=>{
-  // Datum normalisieren auf YYYY-MM-DD
-  const dateParts = t.date.split("-"); // z.B. "2026-1-5" -> ["2026","1","5"]
-  const yearStr = dateParts[0].padStart(4,"0");
-  const monthStr = dateParts[1].padStart(2,"0");
-  const dayStr = dateParts[2].padStart(2,"0");
-  const normDate = `${yearStr}-${monthStr}-${dayStr}`;
 
-  // Filter
-  if(yearFilter.value !== "all" && yearFilter.value !== yearStr) return;
-  if(monthFilter.value !== "all" && monthFilter.value !== monthStr) return;
+  Object.entries(allTournaments).forEach(([id,t]) => {
+    if(!t.date) return; // Sicherheitscheck
 
-  // Woche berechnen
-  const d = new Date(normDate);
-  const oneJan = new Date(d.getFullYear(),0,1);
-  const week = Math.ceil((((d - oneJan) / 86400000) + oneJan.getDay()+1)/7);
-  if(weekFilter.value !== "all" && parseInt(weekFilter.value) !== week) return;
+    // Datum normalisieren auf YYYY-MM-DD
+    const parts = t.date.split("-");
+    const yearStr = parts[0].padStart(4,"0");
+    const monthStr = parts[1].padStart(2,"0");
+    const dayStr = parts[2].padStart(2,"0");
+    const normDate = `${yearStr}-${monthStr}-${dayStr}`;
 
-  // Tag
-  if(dayFilter.value !== "" && dayFilter.value !== normDate) return;
+    // Filter anwenden
+    if(year !== "all" && year !== yearStr) return;
+    if(month !== "all" && month !== monthStr) return;
 
-  // Div erstellen wie bisher
-  const div = document.createElement("div");
-  div.className = "tournament";
+    const d = new Date(normDate);
+    const oneJan = new Date(d.getFullYear(),0,1);
+    const weekNumber = Math.ceil((((d - oneJan)/86400000 + oneJan.getDay()+1)/7));
+    if(week !== "all" && parseInt(week) !== weekNumber) return;
 
-  div.innerHTML = `
-    <div class="tournament-header" onclick="toggleTournament('${id}')">
-      <strong>${t.name}</strong> (${normDate})
-    </div>
+    if(day && day !== normDate) return;
 
-    <div class="tournament-body" id="t-body-${id}" style="display:none;">
-      <button onclick="editTournament('${id}')">Bearbeiten</button>
-      <button onclick="deleteTournament('${id}')">Löschen</button>
-    </div>
-  `;
+    // Turnier-Box erstellen
+    const div = document.createElement("div");
+    div.className = "tournament";
+    div.innerHTML = `
+      <div class="tournament-header" onclick="toggleTournament('${id}')">
+        <strong>${t.name}</strong> (${normDate})
+      </div>
+      <div class="tournament-body" id="t-body-${id}" style="display:none;">
+        <button onclick="editTournament('${id}')">Bearbeiten</button>
+        <button onclick="deleteTournament('${id}')">Löschen</button>
+      </div>
+    `;
+    tournamentList.appendChild(div);
 
-  tournamentList.appendChild(div);
-  
-});
-
+    // Stats für Rangliste/Charts
     turnierLabels.push(t.name);
-    players.forEach(p=>{
-      const d = t.players[p];
+    players.forEach(p => {
+      const d = t.players[p] || {s:0,n:0,gl:0,vl:0,avg:0,dq:0};
       stats[p].s += d.s;
       stats[p].n += d.n;
       stats[p].gl += d.gl;
@@ -543,6 +543,7 @@ function renderAll(){
   renderRanking(stats);
   renderCharts(stats, turnierLabels);
 }
+
 window.toggleTournament = function(id){
   const body = document.getElementById("t-body-" + id);
   if(!body) return;
@@ -674,6 +675,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
