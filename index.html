@@ -70,8 +70,13 @@
 </section>
 
 <section class="card">
-  <h2>Gespeicherte Turniere</h2>
-  <div id="tournamentList"></div>
+  <h2 class="collapsible-header" onclick="toggleTournamentList()">
+    Gespeicherte Turniere ⬇️
+  </h2>
+
+  <div id="tournamentListWrapper" style="display:none;">
+    <div id="tournamentList"></div>
+  </div>
 </section>
 
 <section class="card">
@@ -476,4 +481,5 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
