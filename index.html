@@ -72,7 +72,8 @@
   </select>
 
   <label for="dayFilter">Tag:</label>
-  <input type="date" id="dayFilter">
+<input type="date" id="dayFilter">
+<button type="button" id="resetDayBtn">Alle Tage</button>
 
   <button id="applyFilterBtn">Anwenden</button>
 </section>
@@ -155,6 +156,15 @@ const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
+const dayFilter = document.getElementById("dayFilter");  // Tagesfeld
+const resetDayBtn = document.getElementById("resetDayBtn"); // Button zum Zurücksetzen
+
+resetDayBtn.addEventListener("click", () => {
+  dayFilter.value = "";  // setzt das Tagesfeld zurück
+  renderAll();           // zeigt wieder alle Turniere an
+});
+  
+  
   
 // const p1Label = document.getElementById("p1-label"); // bereits oben deklariert
 // const p2Label = document.getElementById("p2-label"); // bereits oben deklariert
@@ -675,6 +685,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
