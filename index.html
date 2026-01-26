@@ -18,7 +18,7 @@
   <h2>Turnier erfassen</h2>
   <div class="form-row">
     <input id="tName" placeholder="Turniername">
-    <input id="tDate" type="date" class="date-input" data-placeholder="tt.mm.jjj" aria-label="Datum">
+    <input id="tDate" type="text" placeholder="tt.mm.jjj" class="date-input" aria-label="Datum">
   </div>
 </section>
 
@@ -177,9 +177,37 @@ resetDayBtn.addEventListener("click", () => {
   dayFilter.value = "";  // setzt das Tagesfeld zurück
   renderAll();           // zeigt wieder alle Turniere an
 });
-  
-  
-  
+
+// ----------------------------
+// iPhone Datum-Picker für Turnierfeld
+// ----------------------------
+const tDateInput = document.getElementById("tDate");
+
+// Prüfen, ob iOS
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+if(isIOS) {
+  tDateInput.addEventListener("focus", () => {
+    // Temporäres unsichtbares Date-Feld erstellen
+    const temp = document.createElement("input");
+    temp.type = "date";
+    temp.style.position = "absolute";
+    temp.style.opacity = 0;
+    document.body.appendChild(temp);
+
+    temp.onchange = () => {
+      // Wert ins Textfeld übernehmen, Format tt.mm.jjj
+      const parts = temp.value.split("-");
+      if(parts.length === 3){
+        tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      }
+      document.body.removeChild(temp);
+    };
+
+    temp.focus();
+  });
+}
+   
 // const p1Label = document.getElementById("p1-label"); // bereits oben deklariert
 // const p2Label = document.getElementById("p2-label"); // bereits oben deklariert
 
@@ -699,6 +727,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
