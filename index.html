@@ -17,11 +17,17 @@
 <section class="card">
   <h2>Turnier erfassen</h2>
   <div class="form-row">
+    <!-- Turniername-Feld -->
     <input id="tName" placeholder="Turniername">
-    <input id="tDate" type="text" placeholder="tt.mm.jjj" class="date-input" aria-label="Datum">
+
+    <!-- Datum-Feld, jetzt iPhone-freundlich -->
+    <input 
+        id="tDate" 
+        type="date" 
+        placeholder="tt.mm.jjj" 
+        aria-label="Datum">
   </div>
 </section>
-
 
   <div id="gameForm">
     <h3>Spiel hinzufügen</h3>
@@ -187,26 +193,33 @@ const tDateInput = document.getElementById("tDate");
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
 
 if(isIOS) {
-  tDateInput.addEventListener("focus", () => {
-    // Temporäres unsichtbares Date-Feld erstellen
-    const temp = document.createElement("input");
-    temp.type = "date";
-    temp.style.position = "absolute";
-    temp.style.opacity = 0;
-    document.body.appendChild(temp);
+    // Typ auf Text setzen, damit Placeholder sichtbar bleibt
+    tDateInput.type = "text";
+    tDateInput.placeholder = "tt.mm.jjj";
 
-    temp.onchange = () => {
-      // Wert ins Textfeld übernehmen, Format tt.mm.jjj
-      const parts = temp.value.split("-");
-      if(parts.length === 3){
-        tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
-      }
-      document.body.removeChild(temp);
-    };
+    // Focus Event für iOS
+    tDateInput.addEventListener("focus", () => {
+        // temporäres unsichtbares Date-Feld erstellen
+        const temp = document.createElement("input");
+        temp.type = "date";
+        temp.style.position = "absolute";
+        temp.style.opacity = 0;
+        document.body.appendChild(temp);
 
-    temp.focus();
-  });
+        // Wert übernehmen, Format tt.mm.jjj
+        temp.onchange = () => {
+            const parts = temp.value.split("-");
+            if(parts.length === 3){
+                tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+            document.body.removeChild(temp);
+        };
+
+        // Picker öffnen
+        temp.focus();
+    });
 }
+
    
 // const p1Label = document.getElementById("p1-label"); // bereits oben deklariert
 // const p2Label = document.getElementById("p2-label"); // bereits oben deklariert
@@ -727,6 +740,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
