@@ -57,25 +57,37 @@
   <button class="secondary" id="cancelBtn" style="display:none;">Abbrechen</button>
 </section>
 
-<section class="card">
+<section class="card filter-card">
   <h2>Zeitraum wählen</h2>
 
-  <label for="yearFilter">Jahr:</label>
-  <select id="yearFilter"></select>
+  <div class="filter-group">
+    <label>Jahr</label>
+    <select id="yearFilter"></select>
+  </div>
 
-  <label for="monthFilter">Monat:</label>
-  <select id="monthFilter"></select>
+  <div class="filter-group">
+    <label>Monat</label>
+    <select id="monthFilter"></select>
+  </div>
 
-  <label for="weekFilter">Woche:</label>
-  <select id="weekFilter">
-    <option value="all">Alle Wochen</option>
-  </select>
+  <div class="filter-group">
+    <label>Woche</label>
+    <select id="weekFilter">
+      <option value="all">Alle Wochen</option>
+    </select>
+  </div>
 
-  <label for="dayFilter">Tag:</label>
-<input type="date" id="dayFilter">
-<button type="button" id="resetDayBtn">Alle Tage</button>
+  <div class="filter-group">
+    <label>Tag</label>
+    <input type="date" id="dayFilter">
+    <button type="button" id="resetDayBtn" class="secondary-btn">
+      Alle Tage
+    </button>
+  </div>
 
-  <button id="applyFilterBtn">Anwenden</button>
+  <button id="applyFilterBtn" class="primary-btn">
+    Anwenden
+  </button>
 </section>
 
 <section class="card">
@@ -685,6 +697,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
