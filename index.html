@@ -17,17 +17,11 @@
 <section class="card">
   <h2>Turnier erfassen</h2>
   <div class="form-row">
-    <!-- Turniername-Feld -->
     <input id="tName" placeholder="Turniername">
-
-    <!-- Datum-Feld, jetzt iPhone-freundlich -->
-    <input 
-        id="tDate" 
-        type="date" 
-        placeholder="tt.mm.jjj" 
-        aria-label="Datum">
+    <input id="tDate" type="date" class="date-input" data-placeholder="tt.mm.jjj" aria-label="Datum">
   </div>
 </section>
+
 
   <div id="gameForm">
     <h3>Spiel hinzufügen</h3>
@@ -183,44 +177,9 @@ resetDayBtn.addEventListener("click", () => {
   dayFilter.value = "";  // setzt das Tagesfeld zurück
   renderAll();           // zeigt wieder alle Turniere an
 });
-
-// ----------------------------
-// iPhone Datum-Picker für Turnierfeld
-// ----------------------------
-const tDateInput = document.getElementById("tDate");
-
-// Prüfen, ob iOS
-const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-
-if(isIOS) {
-    // Typ auf Text setzen, damit Placeholder sichtbar bleibt
-    tDateInput.type = "text";
-    tDateInput.placeholder = "tt.mm.jjj";
-
-    // Focus Event für iOS
-    tDateInput.addEventListener("focus", () => {
-        // temporäres unsichtbares Date-Feld erstellen
-        const temp = document.createElement("input");
-        temp.type = "date";
-        temp.style.position = "absolute";
-        temp.style.opacity = 0;
-        document.body.appendChild(temp);
-
-        // Wert übernehmen, Format tt.mm.jjj
-        temp.onchange = () => {
-            const parts = temp.value.split("-");
-            if(parts.length === 3){
-                tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
-            }
-            document.body.removeChild(temp);
-        };
-
-        // Picker öffnen
-        temp.focus();
-    });
-}
-
-   
+  
+  
+  
 // const p1Label = document.getElementById("p1-label"); // bereits oben deklariert
 // const p2Label = document.getElementById("p2-label"); // bereits oben deklariert
 
@@ -740,9 +699,6 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
-
-
-
 
 
 
