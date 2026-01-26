@@ -167,13 +167,29 @@ canvas {
        Turnier erfassen – iPhone
        =========================== */
 
-    #tName,
-    #tDate {
-        width: 100%;
-        min-width: 100%;
-        box-sizing: border-box;
-        font-size: 1rem;
-    }
+   /* ===========================
+   Turnier erfassen – iPhone
+   =========================== */
+
+#tName {
+    width: 100% !important;  /* volle Breite erzwingen */
+    flex: 1 1 100%;          /* Flex ignorieren, volle Zeile */
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+#tDate {
+    width: 100%;
+    flex: 1 1 100%;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* Abstand zwischen Name & Datum */
+.form-row {
+    flex-direction: column;  /* Name & Datum untereinander */
+    gap: 10px;               /* schöner Abstand */
+}
 
     /* ===========================
        Filter – iPhone
@@ -227,5 +243,6 @@ canvas {
         color: #fff;
     }
 }
+
 
 
