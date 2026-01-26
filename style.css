@@ -142,3 +142,68 @@ canvas {
     button { margin-bottom: 5px; }
     .player-row input { flex: 0 0 50px; margin-right: 5px; }
 }
+/* ===========================
+   FILTER – iPhone optimiert
+   =========================== */
+
+.filter-card {
+    padding: 20px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+.filter-group select,
+.filter-group input[type="date"] {
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
+/* Reset-Tag Button */
+.secondary-btn {
+    margin-top: 8px;
+    background-color: #9ca3af;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+.secondary-btn:hover {
+    background-color: #6b7280;
+}
+
+/* Anwenden Button */
+.primary-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    background-color: #10b981;
+    color: #fff;
+}
+
+.primary-btn:hover {
+    background-color: #059669;
+}
+
+/* Extra iPhone Feinschliff */
+@media (max-width: 600px) {
+    .filter-card h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+}
+
