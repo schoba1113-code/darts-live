@@ -185,6 +185,27 @@ canvas {
     font-size: 1rem;
 }
 
+/* Datum-Feld – iPhone Fix */
+.date-input {
+    width: 100%;           /* volle Breite wie Turniername */
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1px solid #3b82f6; /* blau wie vorher */
+    color: #111827;
+}
+
+/* Hinweis-Text für iPhone anzeigen */
+.date-input::-webkit-datetime-edit-text,
+.date-input::-webkit-datetime-edit-month-field,
+.date-input::-webkit-datetime-edit-day-field,
+.date-input::-webkit-datetime-edit-year-field {
+    color: #6b7280;  /* hellgrau, wie Placeholder */
+    font-size: 0.95rem;
+}
+    
 /* Abstand zwischen Name & Datum */
 .form-row {
     flex-direction: column;  /* Name & Datum untereinander */
@@ -243,6 +264,7 @@ canvas {
         color: #fff;
     }
 }
+
 
 
 
