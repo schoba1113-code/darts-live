@@ -792,7 +792,12 @@ function renderHSList(){
   });
 
   // Zeilen erzeugen
-  players.forEach(player => {
+ // Sortieren nach Gesamtzahl der 180er, absteigend
+const sortedPlayers = players.slice().sort((a,b) => totals[b] - totals[a]);
+
+// Zeilen erzeugen
+sortedPlayers.forEach(player => {
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${player}</td>
@@ -836,6 +841,7 @@ window.deleteHSByPlayer = function(player){
 </script>
 </body>
 </html>
+
 
 
 
