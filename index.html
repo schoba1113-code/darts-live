@@ -148,7 +148,7 @@
     <button id="addHSBtn" class="primary">Hinzufügen</button>
   </div>
   <ul id="hsList"></ul>
-</section>
+</section>  
   
 </div>
 
@@ -709,32 +709,6 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Diff: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}}
   });
 }
-  
-  </section> <!-- letzte bestehende Section, z.B. Differenz-Chart -->
-
-<<!-- Turniere, Spiele, Filter etc. existieren bereits -->
-
-</div> <!-- Ende app -->
-
-<script type="module">
-// ============================
-// EXISTIERENDER CODE: Turniere, Spiele, Filter, Rangliste, Charts
-// ============================
-
-// Dein kompletter bisheriger Code für Turniere, Spiele, Filter, Rangliste, Charts
-// muss hier exakt wie vorher stehen. NICHT löschen!
-// Beispiel: Firebase-Initialisierung, Spieler-Array, addGame(), saveTournament(), renderAll(), Charts etc.
-// ------------------------
-// Beispiel:
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = { /* ...deine Config... */ };
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const players = ["Pembe","Marki","Schoba"];
-// ... restlicher existierender Code für Turniere/Charts ...
 
 // ------------------------
 // 180er – Eigenständige Funktion
@@ -786,19 +760,10 @@ function renderHSList() {
     li.textContent = `${entry.player} – ${entry.count}x 180`;
     hsList.appendChild(li);
   });
-}
-
-
+}  
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 
