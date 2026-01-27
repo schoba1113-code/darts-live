@@ -141,9 +141,7 @@
 <section class="card">
   <h2>🎯 180er erfassen</h2>
   <div class="form-row">
-    <select id="hsPlayer">
-      <option value="">Spieler auswählen</option>
-    </select>
+    <select id="hsPlayer"><option value="">Spieler auswählen</option></select>
     <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
     <button id="addHSBtn" class="primary">Hinzufügen</button>
   </div>
@@ -155,13 +153,11 @@
         <th>Aktionen</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Hier kommen die Einträge rein -->
-    </tbody>
+    <tbody></tbody>
   </table>
 </section>
-  
-</div>
+
+</div> <!-- Ende app -->
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -821,6 +817,7 @@ window.deleteHS = function(id){
 </script>
 </body>
 </html>
+
 
 
 
