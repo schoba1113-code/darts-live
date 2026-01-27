@@ -137,6 +137,19 @@
   <canvas id="diffChart"></canvas>
 </section>
 
+<!-- 🎯 180er erfassen – komplett eigenständig -->
+<section class="card">
+  <h2>🎯 180er erfassen</h2>
+  <div class="form-row">
+    <select id="hsPlayer">
+      <option value="">Spieler auswählen</option>
+    </select>
+    <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
+    <button id="addHSBtn" class="primary">Hinzufügen</button>
+  </div>
+  <ul id="hsList"></ul>
+</section>
+  
 </div>
 
 <script type="module">
@@ -723,9 +736,9 @@ const db = getDatabase(app);
 const players = ["Pembe","Marki","Schoba"];
 // ... restlicher existierender Code für Turniere/Charts ...
 
-// ============================
-// 🎯 180er erfassen – Eigenständige Funktion
-// ============================
+// ------------------------
+// 180er – Eigenständige Funktion
+// ------------------------
 
 // Elemente
 const hsPlayerSelect = document.getElementById("hsPlayer");
@@ -733,12 +746,12 @@ const hsCountInput = document.getElementById("hsCount");
 const addHSBtn = document.getElementById("addHSBtn");
 const hsList = document.getElementById("hsList");
 
-// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
+// Spieler in Dropdown einfügen
 players.forEach(p => {
   hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
-// Firebase-Pfad für Highscores (eigenständig)
+// Firebase-Pfad für Highscores
 const hsRef = ref(db, "highscores");
 
 // Lokale Liste
@@ -750,7 +763,7 @@ onValue(hsRef, snap => {
   renderHSList();
 });
 
-// 180er hinzufügen
+// Hinzufügen
 addHSBtn.addEventListener("click", () => {
   const player = hsPlayerSelect.value;
   const count = parseInt(hsCountInput.value);
@@ -761,8 +774,6 @@ addHSBtn.addEventListener("click", () => {
   }
 
   push(hsRef, { player, count, timestamp: new Date().toISOString() });
-
-  // Inputs zurücksetzen
   hsPlayerSelect.value = "";
   hsCountInput.value = "";
 });
@@ -777,9 +788,11 @@ function renderHSList() {
   });
 }
 
+
 </script>
 </body>
 </html>
+
 
 
 
