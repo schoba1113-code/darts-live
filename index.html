@@ -757,10 +757,21 @@ const hsRef = ref(db, "highscores");
 let highScores = [];
 let hsEditId = null;
 
-// Listener
+// 🔄 Firebase Listener für Highscores – jetzt auch Rangliste live
 onValue(hsRef, snap => {
   highScores = snap.val() || [];
+
+  // 1️⃣ Tabelle der 180er aktualisieren
   renderHSList();
+
+  // 2️⃣ Gesamtrangliste live aktualisieren
+  // 'stats' sind die aktuellen Spieler-Stats aus den Turnieren
+  const statsCopy = {};
+  players.forEach(p => {
+    statsCopy[p] = { ...stats[p] }; // Kopie der Stats, um Änderungen zu berücksichtigen
+  });
+
+  renderRanking(statsCopy);
 });
 
 // Hinzufügen / Update
@@ -862,6 +873,7 @@ renderAll();
 </script>
 </body>
 </html>
+
 
 
 
