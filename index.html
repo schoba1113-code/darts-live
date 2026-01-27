@@ -18,12 +18,38 @@
   <h2>Turnier erfassen</h2>
   <div class="form-row">
     <input id="tName" placeholder="Turniername">
-    <input id="tDate" type="date" class="date-input" data-placeholder="tt.mm.jjj" aria-label="Datum">
+    <input 
+      id="tDate" 
+      type="date" 
+      class="date-input" 
+      data-placeholder="tt.mm.jjj" 
+      aria-label="Datum">
   </div>
 </section>
 
+<div id="gameForm">
+  <!-- hier kommt dein Spiel hinzufügen Bereich -->
+</div>
 
-  <div id="gameForm">
+<!-- NEU: 180er Bereich -->
+<section class="card">
+  <h2>🎯 180er eintragen</h2>
+
+  <div class="form-row">
+    <select id="oneEightyPlayer">
+      <option value="">Spieler wählen</option>
+    </select>
+
+    <input type="date" id="oneEightyDate">
+
+    <button id="add180Btn" class="primary">
+      180 eintragen
+    </button>
+  </div>
+
+  <div id="oneEightyList"></div>
+</section>
+
     <h3>Spiel hinzufügen</h3>
     <div class="form-row">
       <select id="player1">
@@ -699,6 +725,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
