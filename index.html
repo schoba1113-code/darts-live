@@ -139,22 +139,24 @@
 
 <!-- 🎯 180er erfassen – HTML -->
 <section class="card">
-  <h2>🎯 180er erfassen</h2>
-  <div class="form-row">
-    <select id="hsPlayer"><option value="">Spieler auswählen</option></select>
-    <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
-    <button id="addHSBtn" class="primary">Hinzufügen</button>
+  <h2 class="collapsible-header" onclick="toggleHSList()">🎯 180er erfassen ⬇️</h2>
+  <div id="hsWrapper" style="display:block; margin-top:10px;">
+    <div class="form-row">
+      <select id="hsPlayer"><option value="">Spieler auswählen</option></select>
+      <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
+      <button id="addHSBtn" class="primary">Hinzufügen</button>
+    </div>
+    <table id="hsTable" border="1" style="width:100%; margin-top:10px; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Spieler</th>
+          <th>Gesamt 180er</th>
+          <th>Aktionen</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-  <table id="hsTable" border="1" style="width:100%; margin-top:10px; border-collapse: collapse;">
-    <thead>
-      <tr>
-        <th>Spieler</th>
-        <th>Anzahl</th>
-        <th>Aktionen</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 </section>
 
 </div> <!-- Ende app -->
@@ -718,12 +720,13 @@ function renderCharts(stats, turnierLabels){
 }
 
 // ------------------------
-// 🎯 180er – Eigenständige Funktion (sicher + eigenständig)
+// 🎯 180er – Eigenständige Funktion, summiert pro Spieler
 // ------------------------
 const hsPlayerSelect = document.getElementById("hsPlayer");
 const hsCountInput = document.getElementById("hsCount");
 const addHSBtn = document.getElementById("addHSBtn");
 const hsTableBody = document.querySelector("#hsTable tbody");
+const hsWrapper = document.getElementById("hsWrapper");
 
 // Spieler einmalig ins Dropdown einfügen
 players.forEach(p => {
@@ -737,7 +740,7 @@ const hsRef = ref(db, "highscores");
 
 // Lokale Liste
 let highScores = [];
-let hsEditId = null; // <- NEU: eigene Edit-ID für 180er, überschreibt nicht Turniere
+let hsEditId = null;
 
 // Listener
 onValue(hsRef, snap => {
@@ -760,54 +763,75 @@ addHSBtn.addEventListener("click", () => {
   if(hsEditId){
     update(ref(db,"highscores/"+hsEditId), entry);
     hsEditId = null;
-    addHSBtn.textContent = "Hinzufügen";
+    addHSBtn.textContent="Hinzufügen";
   } else {
     push(hsRef, entry);
   }
 
-  // Inputs zurücksetzen
-  hsPlayerSelect.value = "";
-  hsCountInput.value = "";
+  hsPlayerSelect.value="";
+  hsCountInput.value="";
 });
 
-// Liste rendern
+// Auf-/zuklappen Funktion
+window.toggleHSList = function(){
+  hsWrapper.style.display = hsWrapper.style.display === "none" ? "block" : "none";
+};
+
+// Rendern (summiert pro Spieler)
 function renderHSList(){
-  hsTableBody.innerHTML = "";
-  Object.entries(highScores).forEach(([id, entry])=>{
+  hsTableBody.innerHTML="";
+
+  // Summieren pro Spieler
+  const totals = {};
+  players.forEach(p => totals[p]=0);
+
+  Object.values(highScores).forEach(entry => {
+    if(totals[entry.player]!==undefined){
+      totals[entry.player] += entry.count;
+    }
+  });
+
+  // Zeilen erzeugen
+  players.forEach(player => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${entry.player}</td>
-      <td>${entry.count}</td>
+      <td>${player}</td>
+      <td>${totals[player]}</td>
       <td>
-        <button onclick="editHS('${id}')">Bearbeiten</button>
-        <button onclick="deleteHS('${id}')">Löschen</button>
+        <button onclick="editHSByPlayer('${player}')">Bearbeiten</button>
+        <button onclick="deleteHSByPlayer('${player}')">Löschen</button>
       </td>
     `;
     hsTableBody.appendChild(tr);
   });
 }
 
-// Bearbeiten
-window.editHS = function(id){
-  const entry = highScores[id];
-  if(!entry) return;
+// Bearbeiten nach Spieler
+window.editHSByPlayer = function(player){
+  // Suche den neuesten Eintrag für diesen Spieler
+  const entries = Object.entries(highScores).filter(([id, entry]) => entry.player===player);
+  if(entries.length===0) return;
 
+  const [id, entry] = entries[entries.length-1]; // letzter Eintrag
   hsPlayerSelect.value = entry.player;
   hsCountInput.value = entry.count;
   hsEditId = id;
-  addHSBtn.textContent = "Update";
+  addHSBtn.textContent="Update";
 }
 
-// Löschen
-window.deleteHS = function(id){
-  if(confirm("Eintrag wirklich löschen?")){
-    remove(ref(db,"highscores/"+id));
-    if(hsEditId===id){
-      hsPlayerSelect.value="";
-      hsCountInput.value="";
-      hsEditId=null;
-      addHSBtn.textContent="Hinzufügen";
-    }
+// Löschen nach Spieler
+window.deleteHSByPlayer = function(player){
+  if(!confirm(`Alle 180er von ${player} löschen?`)) return;
+
+  Object.entries(highScores).forEach(([id, entry]) => {
+    if(entry.player===player) remove(ref(db,"highscores/"+id));
+  });
+
+  hsEditId = null;
+  hsPlayerSelect.value="";
+  hsCountInput.value="";
+  addHSBtn.textContent="Hinzufügen";
+}
   }
 }
 
@@ -815,6 +839,7 @@ window.deleteHS = function(id){
 </script>
 </body>
 </html>
+
 
 
 
