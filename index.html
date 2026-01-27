@@ -699,29 +699,33 @@ function renderCharts(stats, turnierLabels){
   
   </section> <!-- letzte bestehende Section, z.B. Differenz-Chart -->
 
-<!-- Turniere, Spiele, Filter etc. existieren bereits -->
-
-<!-- 🎯 180er erfassen – HTML -->
-<section class="card">
-  <h2>🎯 180er erfassen</h2>
-  <div class="form-row">
-    <select id="hsPlayer">
-      <option value="">Spieler auswählen</option>
-    </select>
-    <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
-    <button id="addHSBtn" class="primary">Hinzufügen</button>
-  </div>
-  <ul id="hsList"></ul>
-</section>
+<<!-- Turniere, Spiele, Filter etc. existieren bereits -->
 
 </div> <!-- Ende app -->
 
 <script type="module">
 // ============================
-// EXISTIERENDER CODE VON TURNIER & CHARTS
+// EXISTIERENDER CODE: Turniere, Spiele, Filter, Rangliste, Charts
 // ============================
 
-// Am Ende vom bestehenden Script: 180er-Funktion einfügen
+// Dein kompletter bisheriger Code für Turniere, Spiele, Filter, Rangliste, Charts
+// muss hier exakt wie vorher stehen. NICHT löschen!
+// Beispiel: Firebase-Initialisierung, Spieler-Array, addGame(), saveTournament(), renderAll(), Charts etc.
+// ------------------------
+// Beispiel:
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = { /* ...deine Config... */ };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const players = ["Pembe","Marki","Schoba"];
+// ... restlicher existierender Code für Turniere/Charts ...
+
+// ============================
+// 🎯 180er erfassen – Eigenständige Funktion
+// ============================
 
 // Elemente
 const hsPlayerSelect = document.getElementById("hsPlayer");
@@ -729,24 +733,24 @@ const hsCountInput = document.getElementById("hsCount");
 const addHSBtn = document.getElementById("addHSBtn");
 const hsList = document.getElementById("hsList");
 
-// Spieler in Dropdown einfügen
+// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
 players.forEach(p => {
   hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
-// Firebase-Pfad für Highscores
+// Firebase-Pfad für Highscores (eigenständig)
 const hsRef = ref(db, "highscores");
 
 // Lokale Liste
 let highScores = [];
 
-// Listener
+// Listener für Highscores
 onValue(hsRef, snap => {
   highScores = snap.val() || [];
   renderHSList();
 });
 
-// Hinzufügen
+// 180er hinzufügen
 addHSBtn.addEventListener("click", () => {
   const player = hsPlayerSelect.value;
   const count = parseInt(hsCountInput.value);
@@ -757,11 +761,13 @@ addHSBtn.addEventListener("click", () => {
   }
 
   push(hsRef, { player, count, timestamp: new Date().toISOString() });
+
+  // Inputs zurücksetzen
   hsPlayerSelect.value = "";
   hsCountInput.value = "";
 });
 
-// Rendern
+// Highscore-Liste rendern
 function renderHSList() {
   hsList.innerHTML = "";
   highScores.forEach((entry) => {
@@ -774,6 +780,8 @@ function renderHSList() {
 </script>
 </body>
 </html>
+
+
 
 
 
