@@ -214,6 +214,11 @@ let editId = null;
 // ============================
 
 const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
+// Spieler ins Dropdown einfügen
+players.forEach(p => {
+  oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+});
+  
 const add180Btn = document.getElementById("add180Btn");
 const oneEightyDate = document.getElementById("oneEightyDate");
 
@@ -760,6 +765,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
