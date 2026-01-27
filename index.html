@@ -720,65 +720,48 @@ function renderCharts(stats, turnierLabels){
 // ------------------------
 // 🎯 180er – Eigenständige Funktion
 // ------------------------
-
-// Elemente
 const hsPlayerSelect = document.getElementById("hsPlayer");
 const hsCountInput = document.getElementById("hsCount");
 const addHSBtn = document.getElementById("addHSBtn");
 const hsTableBody = document.querySelector("#hsTable tbody");
 
-// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
 players.forEach(p => {
   hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
-// Firebase-Pfad für Highscores
 const hsRef = ref(db, "highscores");
-
-// Lokale Liste
 let highScores = [];
-let editId = null; // für Bearbeiten
+let editId = null;
 
-// Listener
 onValue(hsRef, snap => {
   highScores = snap.val() || [];
   renderHSList();
 });
 
-// Hinzufügen / Update
 addHSBtn.addEventListener("click", () => {
   const player = hsPlayerSelect.value;
   const count = parseInt(hsCountInput.value);
-
-  if(!player || !count || count < 1){
-    alert("Bitte Spieler und Anzahl korrekt eingeben");
-    return;
-  }
+  if(!player || !count || count<1){ alert("Bitte Spieler und Anzahl korrekt eingeben"); return; }
 
   const entry = { player, count, timestamp: new Date().toISOString() };
 
   if(editId){
-    // Update
     update(ref(db,"highscores/"+editId), entry);
-    editId = null;
-    addHSBtn.textContent = "Hinzufügen";
+    editId=null;
+    addHSBtn.textContent="Hinzufügen";
   } else {
-    // Neu
     push(hsRef, entry);
   }
 
-  // Inputs zurücksetzen
-  hsPlayerSelect.value = "";
-  hsCountInput.value = "";
+  hsPlayerSelect.value="";
+  hsCountInput.value="";
 });
 
-// Rendern
 function renderHSList(){
-  hsTableBody.innerHTML = "";
-  Object.entries(highScores).forEach(([id, entry]) => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
+  hsTableBody.innerHTML="";
+  Object.entries(highScores).forEach(([id, entry])=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
       <td>${entry.player}</td>
       <td>${entry.count}</td>
       <td>
@@ -790,26 +773,22 @@ function renderHSList(){
   });
 }
 
-// Bearbeiten
 window.editHS = function(id){
-  const entry = highScores[id];
-  if(!entry) return;
-
+  const entry = highScores[id]; if(!entry) return;
   hsPlayerSelect.value = entry.player;
   hsCountInput.value = entry.count;
   editId = id;
-  addHSBtn.textContent = "Update";
+  addHSBtn.textContent="Update";
 }
 
-// Löschen
 window.deleteHS = function(id){
   if(confirm("Eintrag wirklich löschen?")){
     remove(ref(db,"highscores/"+id));
     if(editId===id){
-      hsPlayerSelect.value = "";
-      hsCountInput.value = "";
+      hsPlayerSelect.value="";
+      hsCountInput.value="";
       editId=null;
-      addHSBtn.textContent = "Hinzufügen";
+      addHSBtn.textContent="Hinzufügen";
     }
   }
 }
@@ -817,6 +796,7 @@ window.deleteHS = function(id){
 </script>
 </body>
 </html>
+
 
 
 
