@@ -265,6 +265,35 @@ canvas {
     }
 }
 
+/* ===========================
+   🎯 180er Anzeige
+   =========================== */
+
+#oneEightyList {
+  margin-top: 12px;
+}
+
+#oneEightyList .rank-row {
+  background: linear-gradient(135deg, #facc15, #f59e0b);
+  color: #000;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  margin-top: 6px;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* iPhone Optimierung */
+@media (max-width: 600px) {
+  #oneEightyList .rank-row {
+    font-size: 1.05rem;
+    text-align: center;
+  }
+}
+
+
 
 
 
