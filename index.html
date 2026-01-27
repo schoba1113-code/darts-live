@@ -209,6 +209,37 @@ let allTournaments = {};
 let games = [];
 let editId = null;
 
+// ============================
+// 🎯 180er – Speichern
+// ============================
+
+const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
+const add180Btn = document.getElementById("add180Btn");
+const oneEightyDate = document.getElementById("oneEightyDate");
+
+add180Btn.addEventListener("click", () => {
+  const player = oneEightyPlayerSelect.value;
+  const date = oneEightyDate.value;
+
+  if (!player || !date) {
+    alert("Bitte Spieler UND Datum auswählen");
+    return;
+  }
+
+  const oneEightyRef = ref(db, "oneEighties");
+
+  push(oneEightyRef, {
+    player: player,
+    date: date,
+    timestamp: Date.now()
+  });
+
+  // Eingabefelder zurücksetzen
+  oneEightyPlayerSelect.value = "";
+  oneEightyDate.value = "";
+});
+
+
 // Charts
 let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
 
@@ -729,6 +760,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
