@@ -607,9 +607,18 @@ window.toggleTournamentList = function(){
     : "none";
 };
   
-// Rangliste
 function renderRanking(stats){
-  rankingDiv.innerHTML="";
+  // Gesamte 180er pro Spieler berechnen
+  const total180s = {};
+  players.forEach(p => total180s[p] = 0);
+  Object.values(highScores).forEach(entry => {
+    if(total180s[entry.player] !== undefined){
+      total180s[entry.player] += entry.count;
+    }
+  });
+
+// Rendern der Rangliste
+rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
   sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
 
@@ -628,7 +637,13 @@ function renderRanking(stats){
 
     rankingDiv.innerHTML += `
       <div class="rank-row ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">
-        <span class="medal">${medal}</span> ${r.player} ${badges.join('')} | S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}
+        <div class="rank-left">
+          <span class="medal">${medal}</span> ${r.player} ${badges.join('')}
+        </div>
+        <div class="rank-right">
+          <span>S:${r.s} N:${r.n} GL:${r.gl} VL:${r.vl} Diff:${r.diff}</span>
+          <span class="hs-icon">🎯 ${total180s[r.player]}</span>
+        </div>
       </div>`;
   });
 }
@@ -841,6 +856,7 @@ window.deleteHSByPlayer = function(player){
 </script>
 </body>
 </html>
+
 
 
 
