@@ -696,9 +696,81 @@ function renderCharts(stats, turnierLabels){
     options:{responsive:true,plugins:{tooltip:{callbacks:{label:(ctx)=>`Diff: ${ctx.raw}`}},legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Differenz'}}}}
   });
 }
+  
+<!-- 🎯 180er erfassen – HTML -->
+<section class="card">
+  <h2>🎯 180er erfassen</h2>
+  <div class="form-row">
+    <select id="hsPlayer">
+      <option value="">Spieler auswählen</option>
+    </select>
+    <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
+    <button id="addHSBtn" class="primary">Hinzufügen</button>
+  </div>
+  <ul id="hsList"></ul>
+</section>
+
+<script type="module">
+// ------------------------
+// 180er – Eigenständige Funktion
+// ------------------------
+
+// Elemente
+const hsPlayerSelect = document.getElementById("hsPlayer");
+const hsCountInput = document.getElementById("hsCount");
+const addHSBtn = document.getElementById("addHSBtn");
+const hsList = document.getElementById("hsList");
+
+// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
+players.forEach(p => {
+  hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+});
+
+// Firebase-Pfad für Highscores (eigenständig, beeinflusst nichts anderes)
+const hsRef = ref(db, "highscores");
+
+// Lokale Liste der Highscores
+let highScores = [];
+
+// Listener für Highscores
+onValue(hsRef, snap => {
+  highScores = snap.val() || [];
+  renderHSList();
+});
+
+// 180er hinzufügen
+addHSBtn.addEventListener("click", () => {
+  const player = hsPlayerSelect.value;
+  const count = parseInt(hsCountInput.value);
+
+  if(!player || !count || count < 1) {
+    alert("Bitte Spieler und Anzahl korrekt eingeben");
+    return;
+  }
+
+  const entry = { player, count, timestamp: new Date().toISOString() };
+  push(hsRef, entry);
+
+  // Inputs zurücksetzen
+  hsPlayerSelect.value = "";
+  hsCountInput.value = "";
+});
+
+// Highscore-Liste rendern
+function renderHSList() {
+  hsList.innerHTML = "";
+  highScores.forEach((entry) => {
+    const li = document.createElement("li");
+    li.textContent = `${entry.player} – ${entry.count}x 180`;
+    hsList.appendChild(li);
+  });
+});
 </script>
+
 </body>
 </html>
+
+
 
 
 
