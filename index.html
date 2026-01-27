@@ -18,38 +18,12 @@
   <h2>Turnier erfassen</h2>
   <div class="form-row">
     <input id="tName" placeholder="Turniername">
-    <input 
-      id="tDate" 
-      type="date" 
-      class="date-input" 
-      data-placeholder="tt.mm.jjj" 
-      aria-label="Datum">
+    <input id="tDate" type="date" class="date-input" data-placeholder="tt.mm.jjj" aria-label="Datum">
   </div>
 </section>
 
-<div id="gameForm">
-  <!-- hier kommt dein Spiel hinzufügen Bereich -->
-</div>
 
-<!-- NEU: 180er Bereich -->
-<section class="card">
-  <h2>🎯 180er eintragen</h2>
-
-  <div class="form-row">
-    <select id="oneEightyPlayer">
-      <option value="">Spieler wählen</option>
-    </select>
-
-    <input type="date" id="oneEightyDate">
-
-    <button id="add180Btn" class="primary">
-      180 eintragen
-    </button>
-  </div>
-
-  <div id="oneEightyList"></div>
-</section>
-
+  <div id="gameForm">
     <h3>Spiel hinzufügen</h3>
     <div class="form-row">
       <select id="player1">
@@ -223,11 +197,6 @@ players.forEach(p=>{
   player2Select.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
-const oneEightyPlayer = document.getElementById("oneEightyPlayer");
-players.forEach(p => {
-  oneEightyPlayer.innerHTML += `<option value="${p}">${p}</option>`;
-});  
-  
 document.getElementById("addGameBtn").addEventListener("click", addGame);
 saveBtn.addEventListener("click", saveTournament);
 cancelBtn.addEventListener("click", cancelEdit);
@@ -615,56 +584,6 @@ window.toggleTournamentList = function(){
     ? "block"
     : "none";
 };
-
-// ============================
-// 🎯 180er – Logik
-// ============================
-
-const oneEightyPlayer = document.getElementById("oneEightyPlayer");
-const oneEightyDate = document.getElementById("oneEightyDate");
-const add180Btn = document.getElementById("add180Btn");
-const oneEightyList = document.getElementById("oneEightyList");
-
-// Spieler ins Dropdown laden
-players.forEach(p => {
-  oneEightyPlayer.innerHTML += `<option value="${p}">${p}</option>`;
-});
-
-// 180 speichern
-add180Btn.addEventListener("click", () => {
-  const player = oneEightyPlayer.value;
-  const date = oneEightyDate.value;
-
-  if (!player || !date) {
-    alert("Spieler und Datum auswählen");
-    return;
-  }
-
-  const data = {
-    player,
-    date
-  };
-
-  push(ref(db, "oneEighties"), data);
-
-  oneEightyPlayer.value = "";
-  oneEightyDate.value = "";
-});
-
-// 180 anzeigen
-onValue(ref(db, "oneEighties"), snap => {
-  oneEightyList.innerHTML = "";
-
-  const data = snap.val();
-  if (!data) return;
-
-  Object.values(data).forEach(e => {
-    const div = document.createElement("div");
-    div.className = "rank-row gold";
-    div.textContent = `🎯 ${e.player} – 180 am ${e.date}`;
-    oneEightyList.appendChild(div);
-  });
-});
   
 // Rangliste
 function renderRanking(stats){
@@ -780,9 +699,6 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
-
-
-
 
 
 
