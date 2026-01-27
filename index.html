@@ -168,6 +168,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// ------------------------
+// Firebase Setup
+// ------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyBpIYgzHZbrtjBAHrbVlsqwkuI6weoQD2o",
   authDomain: "darts-turniere-dacfc.firebaseapp.com",
@@ -181,12 +184,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// ------------------------
+// Spieler & DOM Elemente
+// ------------------------
 const players = ["Pembe","Marki","Schoba"];
 const player1Select = document.getElementById("player1");
 const player2Select = document.getElementById("player2");
 const p1Label = document.getElementById("p1-label");
 const p2Label = document.getElementById("p2-label");
-  
+
 const gameList = document.getElementById("gameList");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
@@ -195,38 +201,63 @@ const rankingDiv = document.getElementById("ranking");
 const tournamentList = document.getElementById("tournamentList");
 const yearFilter = document.getElementById("yearFilter");
 const monthFilter = document.getElementById("monthFilter");
-const dayFilter = document.getElementById("dayFilter");  // Tagesfeld
-const resetDayBtn = document.getElementById("resetDayBtn"); // Button zum Zurücksetzen
+const dayFilter = document.getElementById("dayFilter");
+const resetDayBtn = document.getElementById("resetDayBtn");
 
+// ------------------------
+// Reset Day Filter
+// ------------------------
 resetDayBtn.addEventListener("click", () => {
-  dayFilter.value = "";  // setzt das Tagesfeld zurück
-  renderAll();           // zeigt wieder alle Turniere an
+  dayFilter.value = "";
+  renderAll();
 });
-  
-  
-  
-// const p1Label = document.getElementById("p1-label"); // bereits oben deklariert
-// const p2Label = document.getElementById("p2-label"); // bereits oben deklariert
 
+// ----------------------------
+// iPhone Datum-Picker für Turnierfeld
+// ----------------------------
+const tDateInput = document.getElementById("tDate");
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
 
+if (isIOS) {
+  tDateInput.addEventListener("focus", () => {
+    const temp = document.createElement("input");
+    temp.type = "date";
+    temp.style.position = "absolute";
+    temp.style.opacity = 0;
+    document.body.appendChild(temp);
+
+    temp.onchange = () => {
+      const parts = temp.value.split("-");
+      if (parts.length === 3) {
+        tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      }
+      document.body.removeChild(temp);
+    };
+
+    temp.focus();
+  });
+}
+
+// ------------------------
+// Grundlegende Variablen
+// ------------------------
 let allTournaments = {};
 let games = [];
 let editId = null;
 
-// ============================
-// 🎯 180er – Speichern
-// ============================
-
+// ------------------------
+// 🎯 180er – Setup
+// ------------------------
 const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
+const add180Btn = document.getElementById("add180Btn");
+const oneEightyDate = document.getElementById("oneEightyDate");
 
-// Spieler nur in diesem Dropdown einfügen, Turnier-Dropdowns nicht berühren
+// Spieler nur in diesem Dropdown einfügen (Turnier-Dropdowns bleiben unverändert)
 players.forEach(p => {
   oneEightyPlayerSelect.add(new Option(p, p));
 });
 
-const add180Btn = document.getElementById("add180Btn");
-const oneEightyDate = document.getElementById("oneEightyDate");
-
+// 180er eintragen
 add180Btn.addEventListener("click", () => {
   const player = oneEightyPlayerSelect.value;
   const date = oneEightyDate.value;
@@ -244,31 +275,21 @@ add180Btn.addEventListener("click", () => {
     timestamp: Date.now()
   });
 
-  // Eingabefelder zurücksetzen
   oneEightyPlayerSelect.value = "";
   oneEightyDate.value = "";
 });
 
-
-// Charts
-let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
-
-// Spieler für Dropdown
-players.forEach(p=>{
+// ------------------------
+// Spieler für Turnier Dropdowns
+// ------------------------
+players.forEach(p => {
   player1Select.innerHTML += `<option value="${p}">${p}</option>`;
   player2Select.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
-// ----------------------------
-// 🎯 180er – Spieler Dropdown füllen
-// ----------------------------
-const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
-
-// alle Spieler ins 180er Dropdown einfügen
-players.forEach(p=>{
-  oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
-});
-  
+// ------------------------
+// Event Listener
+// ------------------------
 document.getElementById("addGameBtn").addEventListener("click", addGame);
 saveBtn.addEventListener("click", saveTournament);
 cancelBtn.addEventListener("click", cancelEdit);
@@ -281,8 +302,10 @@ player1Select.addEventListener("change", () => {
 player2Select.addEventListener("change", () => {
   p2Label.textContent = player2Select.value || "Spieler 2";
 });
-  
+
+// ------------------------
 // Spiel hinzufügen
+// ------------------------
 function addGame(){
   const p1 = player1Select.value;
   const p2 = player2Select.value;
@@ -309,8 +332,10 @@ function addGame(){
 
   games.push(gameData);
 
-   // Liste aktualisieren
-  renderGameList(); // <--- hier aufrufen
+  // Liste aktualisieren
+  renderGameList();
+}
+</script>
 
   // Inputs zurücksetzen
   ["p1","p2"].forEach(p=>{
@@ -771,6 +796,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
