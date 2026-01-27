@@ -786,8 +786,8 @@ addHSBtn.addEventListener("click", () => {
   hsPlayerSelect.value="";
   hsCountInput.value="";
 
-  // 🔄 Rangliste aktualisieren
-  renderRanking(stats);
+  // 🔄 Gesamte Anzeige neu rendern
+renderAll();
 });
 
 // Auf-/zuklappen Funktion
@@ -855,13 +855,14 @@ window.deleteHSByPlayer = function(player){
   hsCountInput.value="";
   addHSBtn.textContent="Hinzufügen";
 
-// 🔄 Rangliste aktualisieren
-  renderRanking(stats);
+// 🔄 Gesamte Anzeige neu rendern
+renderAll();
 }
 
 </script>
 </body>
 </html>
+
 
 
 
