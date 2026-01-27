@@ -214,11 +214,12 @@ let editId = null;
 // ============================
 
 const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
-// Spieler ins Dropdown einfügen
+
+// Spieler nur in diesem Dropdown einfügen, Turnier-Dropdowns nicht berühren
 players.forEach(p => {
-  oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+  oneEightyPlayerSelect.add(new Option(p, p));
 });
-  
+
 const add180Btn = document.getElementById("add180Btn");
 const oneEightyDate = document.getElementById("oneEightyDate");
 
@@ -243,6 +244,7 @@ add180Btn.addEventListener("click", () => {
   oneEightyPlayerSelect.value = "";
   oneEightyDate.value = "";
 });
+
 
 
 // Charts
@@ -765,6 +767,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
