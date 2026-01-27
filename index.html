@@ -137,7 +137,7 @@
   <canvas id="diffChart"></canvas>
 </section>
 
-<!-- 🎯 180er erfassen – komplett eigenständig -->
+<!-- 🎯 180er erfassen – HTML -->
 <section class="card">
   <h2>🎯 180er erfassen</h2>
   <div class="form-row">
@@ -147,8 +147,19 @@
     <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
     <button id="addHSBtn" class="primary">Hinzufügen</button>
   </div>
-  <ul id="hsList"></ul>
-</section>  
+  <table id="hsTable" border="1" style="width:100%; margin-top:10px; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Spieler</th>
+        <th>Anzahl</th>
+        <th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Hier kommen die Einträge rein -->
+    </tbody>
+  </table>
+</section>
   
 </div>
 
@@ -711,16 +722,16 @@ function renderCharts(stats, turnierLabels){
 }
 
 // ------------------------
-// 180er – Eigenständige Funktion
+// 🎯 180er – Eigenständige Funktion
 // ------------------------
 
 // Elemente
 const hsPlayerSelect = document.getElementById("hsPlayer");
 const hsCountInput = document.getElementById("hsCount");
 const addHSBtn = document.getElementById("addHSBtn");
-const hsList = document.getElementById("hsList");
+const hsTableBody = document.querySelector("#hsTable tbody");
 
-// Spieler in Dropdown einfügen
+// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
 players.forEach(p => {
   hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
 });
@@ -730,40 +741,87 @@ const hsRef = ref(db, "highscores");
 
 // Lokale Liste
 let highScores = [];
+let editId = null; // für Bearbeiten
 
-// Listener für Highscores
+// Listener
 onValue(hsRef, snap => {
   highScores = snap.val() || [];
   renderHSList();
 });
 
-// Hinzufügen
+// Hinzufügen / Update
 addHSBtn.addEventListener("click", () => {
   const player = hsPlayerSelect.value;
   const count = parseInt(hsCountInput.value);
 
-  if(!player || !count || count < 1) {
+  if(!player || !count || count < 1){
     alert("Bitte Spieler und Anzahl korrekt eingeben");
     return;
   }
 
-  push(hsRef, { player, count, timestamp: new Date().toISOString() });
+  const entry = { player, count, timestamp: new Date().toISOString() };
+
+  if(editId){
+    // Update
+    update(ref(db,"highscores/"+editId), entry);
+    editId = null;
+    addHSBtn.textContent = "Hinzufügen";
+  } else {
+    // Neu
+    push(hsRef, entry);
+  }
+
+  // Inputs zurücksetzen
   hsPlayerSelect.value = "";
   hsCountInput.value = "";
 });
 
-// Highscore-Liste rendern
-function renderHSList() {
-  hsList.innerHTML = "";
-  highScores.forEach((entry) => {
-    const li = document.createElement("li");
-    li.textContent = `${entry.player} – ${entry.count}x 180`;
-    hsList.appendChild(li);
+// Rendern
+function renderHSList(){
+  hsTableBody.innerHTML = "";
+  Object.entries(highScores).forEach(([id, entry]) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${entry.player}</td>
+      <td>${entry.count}</td>
+      <td>
+        <button onclick="editHS('${id}')">Bearbeiten</button>
+        <button onclick="deleteHS('${id}')">Löschen</button>
+      </td>
+    `;
+    hsTableBody.appendChild(tr);
   });
-}  
+}
+
+// Bearbeiten
+window.editHS = function(id){
+  const entry = highScores[id];
+  if(!entry) return;
+
+  hsPlayerSelect.value = entry.player;
+  hsCountInput.value = entry.count;
+  editId = id;
+  addHSBtn.textContent = "Update";
+}
+
+// Löschen
+window.deleteHS = function(id){
+  if(confirm("Eintrag wirklich löschen?")){
+    remove(ref(db,"highscores/"+id));
+    if(editId===id){
+      hsPlayerSelect.value = "";
+      hsCountInput.value = "";
+      editId=null;
+      addHSBtn.textContent = "Hinzufügen";
+    }
+  }
+}
+
 </script>
 </body>
 </html>
+
 
 
 
