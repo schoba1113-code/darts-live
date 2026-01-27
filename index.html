@@ -264,7 +264,8 @@ players.forEach(p=>{
 // ----------------------------
 const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
 
-players.forEach(p => {
+// alle Spieler ins 180er Dropdown einfügen
+players.forEach(p=>{
   oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
 });
   
@@ -770,6 +771,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
