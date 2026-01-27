@@ -697,78 +697,82 @@ function renderCharts(stats, turnierLabels){
   });
 }
   
-<!-- 🎯 180er erfassen – HTML -->
-<section class="card">
-  <h2>🎯 180er erfassen</h2>
-  <div class="form-row">
-    <select id="hsPlayer">
-      <option value="">Spieler auswählen</option>
-    </select>
-    <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
-    <button id="addHSBtn" class="primary">Hinzufügen</button>
-  </div>
-  <ul id="hsList"></ul>
-</section>
+  </section> <!-- letzte bestehende Section, z.B. Differenz-Chart -->
+
+  <!-- 🎯 180er erfassen – HTML -->
+  <section class="card">
+    <h2>🎯 180er erfassen</h2>
+    <div class="form-row">
+      <select id="hsPlayer">
+        <option value="">Spieler auswählen</option>
+      </select>
+      <input type="number" id="hsCount" placeholder="Anzahl 180er" min="1">
+      <button id="addHSBtn" class="primary">Hinzufügen</button>
+    </div>
+    <ul id="hsList"></ul>
+  </section>
+
+</div> <!-- Ende .app -->
 
 <script type="module">
-// ------------------------
-// 180er – Eigenständige Funktion
-// ------------------------
+  // === ALLES VORHERIGE SCRIPT bleibt unverändert ===
+  // (Firebase-Init, Turniere, Charts, Filter, Rangliste, etc.)
 
-// Elemente
-const hsPlayerSelect = document.getElementById("hsPlayer");
-const hsCountInput = document.getElementById("hsCount");
-const addHSBtn = document.getElementById("addHSBtn");
-const hsList = document.getElementById("hsList");
+  // ------------------------
+  // 180er – Eigenständige Funktion
+  // ------------------------
 
-// Spieler in Dropdown einfügen (wiederverwendet die bestehende players-Liste)
-players.forEach(p => {
-  hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
-});
+  const hsPlayerSelect = document.getElementById("hsPlayer");
+  const hsCountInput = document.getElementById("hsCount");
+  const addHSBtn = document.getElementById("addHSBtn");
+  const hsList = document.getElementById("hsList");
 
-// Firebase-Pfad für Highscores (eigenständig, beeinflusst nichts anderes)
-const hsRef = ref(db, "highscores");
+  // Spieler-Dropdown befüllen
+  players.forEach(p => {
+    hsPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+  });
 
-// Lokale Liste der Highscores
-let highScores = [];
+  // Firebase-Pfad für Highscores
+  const hsRef = ref(db, "highscores");
 
-// Listener für Highscores
-onValue(hsRef, snap => {
-  highScores = snap.val() || [];
-  renderHSList();
-});
+  let highScores = [];
 
-// 180er hinzufügen
-addHSBtn.addEventListener("click", () => {
-  const player = hsPlayerSelect.value;
-  const count = parseInt(hsCountInput.value);
+  // Listener für Highscores
+  onValue(hsRef, snap => {
+    highScores = snap.val() || [];
+    renderHSList();
+  });
 
-  if(!player || !count || count < 1) {
-    alert("Bitte Spieler und Anzahl korrekt eingeben");
-    return;
+  // 180er hinzufügen
+  addHSBtn.addEventListener("click", () => {
+    const player = hsPlayerSelect.value;
+    const count = parseInt(hsCountInput.value);
+
+    if (!player || !count || count < 1) {
+      alert("Bitte Spieler und Anzahl korrekt eingeben");
+      return;
+    }
+
+    const entry = { player, count, timestamp: new Date().toISOString() };
+    push(hsRef, entry);
+
+    hsPlayerSelect.value = "";
+    hsCountInput.value = "";
+  });
+
+  function renderHSList() {
+    hsList.innerHTML = "";
+    highScores.forEach(entry => {
+      const li = document.createElement("li");
+      li.textContent = `${entry.player} – ${entry.count}x 180`;
+      hsList.appendChild(li);
+    });
   }
 
-  const entry = { player, count, timestamp: new Date().toISOString() };
-  push(hsRef, entry);
-
-  // Inputs zurücksetzen
-  hsPlayerSelect.value = "";
-  hsCountInput.value = "";
-});
-
-// Highscore-Liste rendern
-function renderHSList() {
-  hsList.innerHTML = "";
-  highScores.forEach((entry) => {
-    const li = document.createElement("li");
-    li.textContent = `${entry.player} – ${entry.count}x 180`;
-    hsList.appendChild(li);
-  });
-});
 </script>
-
 </body>
 </html>
+
 
 
 
