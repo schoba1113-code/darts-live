@@ -249,6 +249,45 @@ let editId = null;
 let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
 
 // ------------------------
+// Alle Turniere aus Firebase laden
+// ------------------------
+onValue(ref(db,"tournaments"), snap => {
+  allTournaments = snap.val() || {};   // Holt alle Turniere aus Firebase
+  buildYearFilter();   // Filter für Jahr / Monat / Woche befüllen
+  buildWeekFilter();
+  buildDayFilter();
+  renderAll();         // Turniere + Spiele + Ranglisten anzeigen
+});
+
+// ============================
+// 🎯 Turnier bearbeiten – Spiele laden
+// ============================
+window.editTournament = function(id) {
+  const tRef = ref(db, "tournaments/" + id);
+
+  onValue(tRef, snap => {
+    const t = snap.val();
+    if (!t) return;
+
+    // Name & Datum setzen
+    document.getElementById("tName").value = t.name;
+    document.getElementById("tDate").value = t.date;
+
+    // Spiele in games[] laden
+    games = t.games ? [...t.games] : [];
+
+    // Liste im UI aktualisieren
+    renderGameList();
+
+    // Edit-Zustand setzen
+    editId = id;
+    saveBtn.textContent = "Update";
+    cancelBtn.style.display = "inline-block";
+  }, { onlyOnce: true });
+};
+  
+
+// ------------------------
 // Spieler-Dropdowns füllen
 // ------------------------
 players.forEach(p=>{
@@ -796,6 +835,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
