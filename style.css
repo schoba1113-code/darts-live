@@ -325,5 +325,65 @@ canvas {
   color: white;
 }
 
+/* ------------------------
+   🎯 180er Tabelle modern/stylish
+------------------------ */
+#hsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#hsTable thead {
+  background-color: #4f46e5;
+  color: white;
+  text-align: left;
+  font-weight: bold;
+}
+
+#hsTable th, #hsTable td {
+  padding: 12px 15px;
+}
+
+#hsTable tbody tr {
+  background-color: #f9fafb;
+  transition: background 0.2s;
+}
+
+#hsTable tbody tr:nth-child(even) {
+  background-color: #edf2ff;
+}
+
+#hsTable tbody tr:hover {
+  background-color: #dbeafe;
+}
+
+#hsTable button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s, color 0.2s;
+}
+
+#hsTable button:hover {
+  opacity: 0.85;
+}
+
+#hsTable button:first-of-type {
+  background-color: #facc15;
+  color: #1e1e1e;
+}
+
+#hsTable button:last-of-type {
+  background-color: #ef4444;
+  color: white;
+}
+
 
 
