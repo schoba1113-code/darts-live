@@ -185,7 +185,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // ------------------------
-// Spieler & DOM Elemente
+// Variablen / DOM
 // ------------------------
 const players = ["Pembe","Marki","Schoba"];
 const player1Select = document.getElementById("player1");
@@ -212,13 +212,13 @@ resetDayBtn.addEventListener("click", () => {
   renderAll();
 });
 
-// ----------------------------
-// iPhone Datum-Picker für Turnierfeld
-// ----------------------------
+// ------------------------
+// iPhone Datum-Picker Turnier
+// ------------------------
 const tDateInput = document.getElementById("tDate");
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
 
-if (isIOS) {
+if(isIOS){
   tDateInput.addEventListener("focus", () => {
     const temp = document.createElement("input");
     temp.type = "date";
@@ -228,7 +228,7 @@ if (isIOS) {
 
     temp.onchange = () => {
       const parts = temp.value.split("-");
-      if (parts.length === 3) {
+      if(parts.length === 3){
         tDateInput.value = `${parts[2]}.${parts[1]}.${parts[0]}`;
       }
       document.body.removeChild(temp);
@@ -239,25 +239,34 @@ if (isIOS) {
 }
 
 // ------------------------
-// Grundlegende Variablen
+// Turnier / Spiel Variablen
 // ------------------------
 let allTournaments = {};
 let games = [];
 let editId = null;
 
+// Charts
+let avgBarChart, avgTrendChart, dqBarChart, dqTrendChart, winsChart, diffChart;
+
 // ------------------------
-// 🎯 180er – Setup
+// Spieler-Dropdowns füllen
+// ------------------------
+players.forEach(p=>{
+  player1Select.innerHTML += `<option value="${p}">${p}</option>`;
+  player2Select.innerHTML += `<option value="${p}">${p}</option>`;
+});
+
+// ------------------------
+// 🎯 180er – SEPARAT
 // ------------------------
 const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
+players.forEach(p=>{
+  oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+});
+
 const add180Btn = document.getElementById("add180Btn");
 const oneEightyDate = document.getElementById("oneEightyDate");
 
-// Spieler nur in diesem Dropdown einfügen (Turnier-Dropdowns bleiben unverändert)
-players.forEach(p => {
-  oneEightyPlayerSelect.add(new Option(p, p));
-});
-
-// 180er eintragen
 add180Btn.addEventListener("click", () => {
   const player = oneEightyPlayerSelect.value;
   const date = oneEightyDate.value;
@@ -280,15 +289,7 @@ add180Btn.addEventListener("click", () => {
 });
 
 // ------------------------
-// Spieler für Turnier Dropdowns
-// ------------------------
-players.forEach(p => {
-  player1Select.innerHTML += `<option value="${p}">${p}</option>`;
-  player2Select.innerHTML += `<option value="${p}">${p}</option>`;
-});
-
-// ------------------------
-// Event Listener
+// Event Listener Turnier
 // ------------------------
 document.getElementById("addGameBtn").addEventListener("click", addGame);
 saveBtn.addEventListener("click", saveTournament);
@@ -331,11 +332,10 @@ function addGame(){
   };
 
   games.push(gameData);
-
-  // Liste aktualisieren
   renderGameList();
 }
 </script>
+
 
   // Inputs zurücksetzen
   ["p1","p2"].forEach(p=>{
@@ -796,6 +796,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
