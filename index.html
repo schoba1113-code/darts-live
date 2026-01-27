@@ -22,8 +22,29 @@
   </div>
 </section>
 
+<!-- =========================
+     🎯 180er – SEPARAT
+     ========================= -->
+<section class="card">
+  <h2>🎯 180er eintragen</h2>
 
-  <div id="gameForm">
+  <div class="form-row">
+    <select id="oneEightyPlayer">
+      <option value="">Spieler wählen</option>
+    </select>
+
+    <input type="date" id="oneEightyDate">
+
+    <button id="add180Btn" class="primary">
+      180 eintragen
+    </button>
+  </div>
+
+  <div id="oneEightyList"></div>
+</section>
+
+<div id="gameForm">
+
     <h3>Spiel hinzufügen</h3>
     <div class="form-row">
       <select id="player1">
@@ -197,6 +218,15 @@ players.forEach(p=>{
   player2Select.innerHTML += `<option value="${p}">${p}</option>`;
 });
 
+// ----------------------------
+// 🎯 180er – Spieler Dropdown füllen
+// ----------------------------
+const oneEightyPlayerSelect = document.getElementById("oneEightyPlayer");
+
+players.forEach(p => {
+  oneEightyPlayerSelect.innerHTML += `<option value="${p}">${p}</option>`;
+});
+  
 document.getElementById("addGameBtn").addEventListener("click", addGame);
 saveBtn.addEventListener("click", saveTournament);
 cancelBtn.addEventListener("click", cancelEdit);
@@ -699,6 +729,7 @@ function renderCharts(stats, turnierLabels){
 </script>
 </body>
 </html>
+
 
 
 
