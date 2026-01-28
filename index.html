@@ -620,7 +620,13 @@ function renderRanking(stats){
 // Rendern der Rangliste
 rankingDiv.innerHTML="";
   const sortable = players.map(p=>({...stats[p],player:p,diff:stats[p].gl-stats[p].vl}));
-  sortable.sort((a,b)=>b.s-a.s||b.gl-a.gl||a.diff-b.diff);
+    sortable.sort((a, b) =>
+    b.s - a.s ||        // 1️⃣ Siege
+    b.diff - a.diff || // 2️⃣ Differenz
+    b.gl - a.gl ||     // 3️⃣ Gewonnene Legs
+    a.vl - b.vl        // 4️⃣ Verlorene Legs (weniger ist besser)
+  );
+
 
   const highestAVG = Math.max(...players.map(p => stats[p].avg.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].avg.length,1)));
   const bestDQ = Math.max(...players.map(p => stats[p].dq.reduce((sum,v)=>sum+v,0)/Math.max(stats[p].dq.length,1)));
@@ -873,6 +879,7 @@ renderAll();
 </script>
 </body>
 </html>
+
 
 
 
